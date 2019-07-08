@@ -37,10 +37,6 @@
     (display #\D)))
 
 
-
-
-
-
 (define write-out2
   (lambda (x)
     (if (not (null? x))
@@ -78,6 +74,12 @@
                   (l2 (- len 1)))))))
 
 
+(define alarm
+  (lambda (l)
+    (display #\alarm)
+    (input-loop l)))
+
+
 (define add-char
   (lambda (l i)
       (define rest (cdr l))
@@ -92,9 +94,7 @@
 (define delete-char
   (lambda (l)
     (if (null? (cdar l))
-        (begin 
-          (display #\alarm)
-          (input-loop l ))
+        (alarm l)
         (let ((c (cdar l))
               (rest (cdr l)))
           (set-cdr! c rest)
@@ -120,13 +120,21 @@
 
 (define right
   (lambda (txt)
-    (move-right)
-    (input-loop (cdr txt) )))
+    (let ((next (cdr txt)))
+      (if (null? next)
+          (alarm txt)
+          (begin
+            (move-right)
+            (input-loop next))))))
 
 (define left
   (lambda (txt)
-    (move-left)
-    (input-loop (cdar txt) )))
+    (let ((before (cdar txt)))
+      (if (null? before)
+          (alarm txt)
+          (begin
+            (move-left)
+            (input-loop before))))))
 
 
 
