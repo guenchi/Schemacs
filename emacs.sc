@@ -135,10 +135,6 @@
   (lambda (txt)
     (define c (read-char))
     (case c 
-      (#\x20
-          (newline)
-          (write-out2 *text*)
-          (input-loop txt))
       (#\esc
         (case (read-char)
           (#\[
@@ -150,7 +146,11 @@
               (#\C
                 (right txt))
               (#\D
-                (left txt))))))
+                (left txt))))
+        (#\esc
+          (newline)
+          (write-out2 *text*)
+          (input-loop txt))))
       (#\delete
         (delete-char txt))
       (else 
