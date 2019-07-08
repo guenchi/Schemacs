@@ -7,9 +7,21 @@
 (define raw
   (foreign-procedure "textmode_raw_mode" () int))
 
-(raw)
+(define get-row
+    (foreign-procedure "get_row" () int))
+
+(define get-col
+    (foreign-procedure "get_col" () int))
 
 (define *text* (cons (cons #\x00 '()) '()))
+(define *row* (get-row))
+(define *col* (get-col))
+
+
+
+(raw)
+
+
 
 (define move
   (lambda ()
@@ -111,12 +123,12 @@
 (define up
   (lambda (txt)
     (move-up)
-    (input-loop txt )))
+    (input-loop (switch-row txt cdar))))
 
 (define down
   (lambda (txt)
     (move-down)
-    (input-loop txt )))
+    (input-loop (switch-row txt cdr))))
 
 (define right
   (lambda (txt)
@@ -135,6 +147,13 @@
           (begin
             (move-left)
             (input-loop before))))))
+
+(define switch-row
+  (lambda (txt f)
+    (let loop ((c *col*)(t txt))
+      (if (> c 0)
+          (loop (- c 1)(f t))
+          t))))
 
 
 (define display-test

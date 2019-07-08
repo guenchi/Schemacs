@@ -2,8 +2,10 @@
 
 #include <stdio.h>
 #include <termios.h>
+#include <sys/ioctl.h>
 
 struct termios raw;
+struct winsize size;
 
 int textmode_raw_mode(void)
 {
@@ -23,4 +25,17 @@ int textmode_raw_mode(void)
     // raw.c_cc[VTIME] = 0;
 
     return tcsetattr(0, TCSAFLUSH, &raw);
+}
+
+
+int get_row(void)
+{
+    ioctl(0, TIOCGWINSZ, &size);
+    return size.ws_row;
+}
+
+int get_col(void)
+{
+    ioctl(0, TIOCGWINSZ, &size);
+    return size.ws_col;
 }
