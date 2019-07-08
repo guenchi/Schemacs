@@ -94,7 +94,7 @@
     (if (null? (cdar l))
         (begin 
           (display #\alarm)
-          (input-loop l (read-char)))
+          (input-loop l ))
         (let ((c (cdar l))
               (rest (cdr l)))
           (set-cdr! c rest)
@@ -106,57 +106,57 @@
               (let ((next (car rest)))
                    (set-cdr! next c)
                    (write-out3 rest)))
-          (input-loop c (read-char))))))
+          (input-loop c )))))
 
 (define up
   (lambda (txt)
     (move-up)
-    (input-loop txt (read-char))))
+    (input-loop txt )))
 
 (define down
   (lambda (txt)
     (move-down)
-    (input-loop txt (read-char))))
+    (input-loop txt )))
 
 (define right
   (lambda (txt)
     (move-right)
-    (input-loop (cdr txt) (read-char))))
+    (input-loop (cdr txt) )))
 
 (define left
   (lambda (txt)
     (move-left)
-    (input-loop (cdar txt) (read-char))))
+    (input-loop (cdar txt) )))
 
 
 
 
 (define  input-loop
-  (lambda (txt c)
-          (case c 
-            (#\x20
-                   (begin
-                     (newline)
-                     (write-out2 *text*)
-                     (input-loop txt (read-char))))
-            (#\esc
-              (if (equal? #\[ (read-char))
-                  (case (read-char)
-                    (#\A
-                      (up txt))
-                    (#\B
-                      (down txt))
-                    (#\C
-                      (right txt))
-                    (#\D
-                      (left txt)))))
-            (#\delete
-                (delete-char txt))
-            (else 
-              (begin
-                (add-char txt c)
-                (input-loop (cdr txt) (read-char)))))))
+  (lambda (txt)
+    (define c (read-char))
+    (case c 
+      (#\x20
+          (newline)
+          (write-out2 *text*)
+          (input-loop txt))
+      (#\esc
+        (case (read-char)
+          (#\[
+            (case (read-char)
+              (#\A
+                (up txt))
+              (#\B
+                (down txt))
+              (#\C
+                (right txt))
+              (#\D
+                (left txt))))))
+      (#\delete
+        (delete-char txt))
+      (else 
+        (add-char txt c)
+        (input-loop (cdr txt) )))))
 
         
-(input-loop *text* (read-char))
+(input-loop *text* )
 
