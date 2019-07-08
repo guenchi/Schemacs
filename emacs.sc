@@ -137,6 +137,11 @@
             (input-loop before))))))
 
 
+(define display-test
+  (lambda (txt)
+    (newline)
+    (write-out2 *text*)
+    (input-loop txt)))
 
 
 (define  input-loop
@@ -156,9 +161,7 @@
               (#\D
                 (left txt))))
         (#\esc
-          (newline)
-          (write-out2 *text*)
-          (input-loop txt))))
+          (display-test txt))))
       (#\delete
         (delete-char txt))
       (else 
