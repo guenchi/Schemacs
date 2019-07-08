@@ -94,7 +94,7 @@
     (if (null? (cdar l))
         (begin 
           (display #\alarm)
-          l)
+          (input-loop l (read-char)))
         (let ((c (cdar l))
               (rest (cdr l)))
           (set-cdr! c rest)
@@ -106,57 +106,57 @@
               (let ((next (car rest)))
                    (set-cdr! next c)
                    (write-out3 rest)))
-          c))))
+          (input-loop c (read-char))))))
 
 (define up
-  (lambda (loop txt)
+  (lambda (txt)
     (move-up)
-    (loop (read-char) txt)))
+    (input-loop txt (read-char))))
 
 (define down
-  (lambda (loop txt)
+  (lambda (txt)
     (move-down)
-    (loop (read-char) txt)))
+    (input-loop txt (read-char))))
 
 (define right
-  (lambda (loop txt)
+  (lambda (txt)
     (move-right)
-    (loop (read-char) (cdr txt))))
+    (input-loop (cdr txt) (read-char))))
 
 (define left
-  (lambda (loop txt)
+  (lambda (txt)
     (move-left)
-    (loop (read-char) (cdar txt))))
+    (input-loop (cdar txt) (read-char))))
 
 
 
 
-(let loop ((c (read-char))
-           (txt *text*))
+(define  input-loop
+  (lambda (txt c)
           (case c 
             (#\x20
                    (begin
                      (newline)
                      (write-out2 *text*)
-                     (loop (read-char) txt)))
+                     (input-loop txt (read-char))))
             (#\esc
               (if (equal? #\[ (read-char))
                   (case (read-char)
                     (#\A
-                      (up loop txt))
+                      (up txt))
                     (#\B
-                      (down loop txt))
+                      (down txt))
                     (#\C
-                      (right loop txt))
+                      (right txt))
                     (#\D
-                      (left loop txt)))))
+                      (left txt)))))
             (#\delete
-                (loop (read-char) (delete-char txt)))
+                (delete-char txt))
             (else 
               (begin
                 (add-char txt c)
-                (loop (read-char) (cdr txt))))))
+                (input-loop (cdr txt) (read-char)))))))
 
+        
+(input-loop *text* (read-char))
 
-;      ^[[A
-; ^[[D ^[[B ^[[C 
