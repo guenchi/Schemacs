@@ -20,10 +20,28 @@
 
 
 (raw)
-(display #\033)
-(display #\[)
-(display #\2)
-(display #\J)
+
+
+(define clean-screem
+  (lambda ()
+    (display #\033)
+    (display #\[)
+    (display #\2)
+    (display #\J)))
+
+
+(define init-mouse
+  (lambda ()
+    (display #\033)
+    (display #\[)
+    (display #\0)
+    (display #\;)
+    (display #\0)
+    (display #\H)))
+
+(clean-screem)
+(init-mouse)
+
 
 
 
@@ -53,12 +71,6 @@
     (display #\D)))
 
 
-(let loop ((r *row*))
-  (if (> r 1)
-    (begin 
-      (move-up)
-      (loop (- r 1)))))
-
 
 (define write-out2
   (lambda (x)
@@ -75,8 +87,8 @@
                 (begin
                   (display (caar l))
                   (l1 (cdr l)))))
-    (let l2 ((len (- (length x) 1)))
-            (if (> len 0)
+    (let l2 ((len (length x)))
+            (if (> len 1)
                 (begin
                   (move-left)
                   (l2 (- len 1)))))))
