@@ -99,19 +99,21 @@
 
 
 (define col+
-  (lambda ()
-    (if (< *col* *col-size*)
-        (set! *col* (+ *col* 1))
-        (set! *col* 0))
-    *col*))
+  (lambda (c i)
+    (if (< c *col-size*)
+        (case i
+          (#\newline 0)
+          (else (+ c 1)))
+        0)))
 
+; (define col-
+;   (lambda (c i)
+;     (if (> c 0)
+;         (case i
+;           (#\newline 0)
+;           (else (- c 1)))
+;         *col-size*)))
 
-(define col-
-  (lambda ()
-    (if (> *col* 0)
-        (set! *col* (- *col* 1))
-        (set! *col* *col-size*))
-    *col*))
 
 
 (define bookmark
@@ -184,57 +186,55 @@
 
 
 (define alarm
-  (lambda (l)
+  (lambda (l r c)
     (display #\alarm)
-    (input-loop l)))
+    (input-loop l r c)))
 
 
 (define add-char
-  (lambda (l i)
-      (define rest (cdr l))
-      (define c (cons (cons (cons i (col+)) l) rest))
-          (set-cdr! l c)
-          (case i
-            (#\newline
-              (set! *col* 0)))
-          (if (null? rest)   
-            (display i)
-            (begin 
-              (set-cdr! (car rest) c)
-              (write-out c)))))
+  (lambda (txt r c i)
+      (define rest (cdr txt))
+      (define t (cons (cons (cons i c) txt) rest))
+      (set-cdr! txt t)
+      (if (null? rest)   
+          (display i)
+          (begin 
+            (set-cdr! (car rest) t)
+            (write-out t)))
+      (input-loop (cdr txt) #f (col+ c i))))
 
 
 (define delete-char
-  (lambda (l)
-    (define c (cdar l))
-    (define rest (cdr l))
-    (if (null? c)
-        (alarm l)
-        (case (caaar l)
+  (lambda (txt r c)
+    (define pre (cdar txt))
+    (define rest (cdr txt))
+    (if (null? pre)
+        (alarm txt r c)
+        (case (caaar txt)
           (#\newline
-            (set-cdr! c rest)
+            (set-cdr! pre rest)
             (if (null? rest)
                 (begin 
                   (move-up)
-                  (move-right (cdaar c)))
+                  (move-right (cdaar pre)))
                 (begin
-                  (set-cdr! (car rest) c)
+                  (set-cdr! (car rest) pre)
                   (clean-line)
                   (move-up)
-                  (move-right (cdaar c))
+                  (move-right (cdaar pre))
                   (write-out3 rest)))
-            (input-loop c ))
+            (input-loop pre r c))
           (else
-            (set-cdr! c rest)
+            (set-cdr! pre rest)
             (display #\backspace)
             (if (null? rest)
                 (begin 
                   (display #\space)
                   (display #\backspace))
                 (begin
-                  (set-cdr! (car rest) c)
+                  (set-cdr! (car rest) pre)
                   (write-out3 rest)))
-            (input-loop c ))))))
+            (input-loop pre r c))))))
 
 
 (define switch-row-up
@@ -253,67 +253,66 @@
           t))))
 
 (define up
-  (lambda (txt)
+  (lambda (txt r c)
     (move-up)
     (input-loop (switch-row-up txt))))
 
 (define down
-  (lambda (txt)
+  (lambda (txt r c)
     (move-down)
     (input-loop (switch-row-up txt))))
 
 (define right
-  (lambda (txt)
+  (lambda (txt r c)
     (let ((next (cdr txt)))
       (if (null? next)
-          (alarm txt)
+          (alarm txt r c)
           (begin
             (move-right)
-            (input-loop next))))))
+            (input-loop next r c))))))
 
 (define left
-  (lambda (txt)
+  (lambda (txt r c)
     (let ((before (cdar txt)))
       (if (null? before)
-          (alarm txt)
+          (alarm txt r c)
           (begin
             (move-left)
-            (input-loop before))))))
+            (input-loop before r c))))))
 
 
 (define display-test
-  (lambda (txt)
+  (lambda (txt r c)
     (newline)
     (write-out2 *text*)
-    (input-loop txt)))
+    (input-loop txt r c)))
 
 
 (define  input-loop
-  (lambda (txt)
-    (define c (read-char))
-    (case c 
+  (lambda (txt r c)
+    (define i (read-char))
+    (case i 
       (#\esc
         (case (read-char)
           (#\[
             (case (read-char)
               (#\A
-                (up txt))
+                (up txt r c))
               (#\B
-                (down txt))
+                (down txt r c))
               (#\C
-                (right txt))
+                (right txt r c))
               (#\D
-                (left txt))))
+                (left txt r c))))
         (#\esc
-          (display-test txt))))
+          (display-test txt r c))))
       (#\delete
-        (delete-char txt))
+        (delete-char txt r c))
       (else 
-        (add-char txt c)
-        (input-loop (cdr txt) )))))
+        (add-char txt r c i)))))
 
         
-(input-loop *text* )
+(input-loop *text* 0 0)
 
 
 
