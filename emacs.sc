@@ -23,34 +23,31 @@
 
 (raw)
 
-(define control
-  (lambda ()
+(define ioctl
+  (lambda keys
     (display #\esc)
-    (display #\[)))
-
+    (display #\[)
+    (let loop ((l keys))
+      (if (not (null? l))
+          (begin 
+            (display (car l))
+            (loop (cdr l)))))))
+        
 (define clean-screem
   (lambda ()
-    (control)
-    (display #\2)
-    (display #\J)))
+    (ioctl #\2 #\J)))
 
 
 (define init-mouse
   (lambda ()
-    (control)
-    (display #\0)
-    (display #\;)
-    (display #\0)
-    (display #\H)))
+    (ioctl #\0 #\; #\0 #\H)))
 
 (clean-screem)
 (init-mouse)
 
 (define get-col
   (lambda ()
-    (control)
-    (display #\6)
-    (display #\n)
+    (ioctl #\6 #\n)
     (case (read-char)
       (#\033
         (case (read-char)
@@ -87,23 +84,19 @@
 
 (define move-up
   (lambda ()
-    (control)
-    (display #\A)))
+    (ioctl #\A)))
 
 (define move-down
   (lambda ()
-    (control)
-    (display #\B)))
+    (ioctl #\B)))
 
 (define move-right
   (lambda ()
-    (control)
-    (display #\C)))
+    (ioctl #\C)))
 
 (define move-left
   (lambda ()
-    (control)
-    (display #\D)))
+    (ioctl #\D)))
 
 
 
