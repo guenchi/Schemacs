@@ -83,20 +83,24 @@
 
 
 (define move-up
-  (lambda ()
-    (ioctl #\A)))
+  (case-lambda 
+    (()(ioctl #\A))
+    ((n)(ioctl n #\A))))
 
 (define move-down
-  (lambda ()
-    (ioctl #\B)))
+  (case-lambda 
+    (()(ioctl #\B))
+    ((n)(ioctl n #\B))))
 
 (define move-right
-  (lambda ()
-    (ioctl #\C)))
+  (case-lambda 
+    (()(ioctl #\C))
+    ((n)(ioctl n #\C))))
 
 (define move-left
-  (lambda ()
-    (ioctl #\D)))
+  (case-lambda 
+    (()(ioctl #\D))
+    ((n)(ioctl n #\D))))
 
 
 
@@ -167,15 +171,15 @@
         (case (caaar l)
           (#\newline
             (set-cdr! c rest)
-            (if (not (null? rest))
+            (if (null? rest)
                 (begin 
                   (move-up)
-                  (ioctl (cdaar c) #\C))
+                  (move-right (cdaar c)))
                 (begin
                   (set-cdr! (car rest) c)
                   (ioctl #\K)
                   (move-up)
-                  (ioctl (cdaar c) #\C)
+                  (move-right (cdaar c))
                   (write-out3 rest)))
             (input-loop c ))
           (else
