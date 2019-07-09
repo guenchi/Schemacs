@@ -20,6 +20,10 @@
 
 
 (raw)
+(display #\033)
+(display #\[)
+(display #\2)
+(display #\J)
 
 
 
@@ -47,6 +51,13 @@
   (lambda ()
     (move)
     (display #\D)))
+
+
+(let loop ((r *row*))
+  (if (> r 1)
+    (begin 
+      (move-up)
+      (loop (- r 1)))))
 
 
 (define write-out2
@@ -120,6 +131,15 @@
                    (write-out3 rest)))
           (input-loop c )))))
 
+
+(define switch-row
+  (lambda (txt f)
+    (let loop ((c *col*)(t txt))
+      (if (> c 0)
+          (loop (- c 1)(f t))
+          t))))
+
+
 (define up
   (lambda (txt)
     (move-up)
@@ -147,13 +167,6 @@
           (begin
             (move-left)
             (input-loop before))))))
-
-(define switch-row
-  (lambda (txt f)
-    (let loop ((c *col*)(t txt))
-      (if (> c 0)
-          (loop (- c 1)(f t))
-          t))))
 
 
 (define display-test
