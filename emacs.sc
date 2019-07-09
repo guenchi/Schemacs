@@ -37,6 +37,10 @@
   (lambda ()
     (ioctl #\2 #\J)))
 
+(define clean-line
+  (lambda ()
+    (ioctl #\K)))
+
 
 (define init-mouse
   (lambda ()
@@ -177,7 +181,7 @@
                   (move-right (cdaar c)))
                 (begin
                   (set-cdr! (car rest) c)
-                  (ioctl #\K)
+                  (clean-line)
                   (move-up)
                   (move-right (cdaar c))
                   (write-out3 rest)))
