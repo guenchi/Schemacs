@@ -21,19 +21,21 @@
 
 (raw)
 
+(define control
+  (lambda ()
+    (display #\esc)
+    (display #\[)))
 
 (define clean-screem
   (lambda ()
-    (display #\033)
-    (display #\[)
+    (control)
     (display #\2)
     (display #\J)))
 
 
 (define init-mouse
   (lambda ()
-    (display #\033)
-    (display #\[)
+    (control)
     (display #\0)
     (display #\;)
     (display #\0)
@@ -45,29 +47,26 @@
 
 
 
-(define move
-  (lambda ()
-    (display #\esc)
-    (display #\[)))
+
 
 (define move-up
   (lambda ()
-    (move)
+    (control)
     (display #\A)))
 
 (define move-down
   (lambda ()
-    (move)
+    (control)
     (display #\B)))
 
 (define move-right
   (lambda ()
-    (move)
+    (control)
     (display #\C)))
 
 (define move-left
   (lambda ()
-    (move)
+    (control)
     (display #\D)))
 
 
@@ -144,23 +143,52 @@
           (input-loop c )))))
 
 
-(define switch-row
-  (lambda (txt f)
+(define get-mouse-col
+  (lambda ()
+    (control)
+    (display #\6)
+    (display #\n)
+    (case (read-char)
+      (#\033
+        (case (read-char)
+          (#\[
+            (let l1 ()
+              (case (read-char)
+                (#\;
+                  (let l2 ((x (read-char))(y 0))
+                    (case x
+                      (#\R
+                        y)
+                      (else 
+                        (l2 (read-char) (+ (* y 10) (- (char->integer x) 48)))))))
+                (else 
+                  (l1))))))))))
+
+
+(define switch-row-up
+  (lambda (txt)
     (let loop ((c *col*)(t txt))
       (if (> c 0)
-          (loop (- c 1)(f t))
+          (loop (- c 1)(cdar t))
           t))))
 
+
+(define switch-row-down
+  (lambda (txt)
+    (let loop ((c *col*)(t txt))
+      (if (> c 0)
+          (loop (- c 1)(cdr t))
+          t))))
 
 (define up
   (lambda (txt)
     (move-up)
-    (input-loop (switch-row txt cdar))))
+    (input-loop (switch-row-up txt))))
 
 (define down
   (lambda (txt)
     (move-down)
-    (input-loop (switch-row txt cdr))))
+    (input-loop (switch-row-up txt))))
 
 (define right
   (lambda (txt)
@@ -215,3 +243,31 @@
         
 (input-loop *text* )
 
+
+
+
+
+
+
+
+; (define switch-row-up
+;   (lambda (txt f)
+;     (let loop ((c *col*)
+;                (c1 (get-mouse-col))
+;                (t txt))
+;       (move-left)
+;       (if (> c 0)
+;           (if (> (get-mouse-col))
+;               (case (caar t)
+;                 (#\newline
+;                   (loop (- c (- c (get-mouse-col)))))
+;                 (else 
+;                   (loop (- c 1)(c1)(cdar t))))
+;               (begin
+;                 (move-up)
+;                 (display #\033)
+;                 (display #\[)
+;                 (display *col*)
+;                 (display #\C)
+;                 (loop (- c 1)(c1)(cdar t)))
+;           t))))
