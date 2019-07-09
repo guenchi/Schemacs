@@ -13,7 +13,9 @@
 (define get-col-size
     (foreign-procedure "get_col" () int))
 
-(define *text* (cons (cons #\x00 '()) '()))
+(define *text* (cons (cons (cons #\x00 0) '()) '()))
+(define *row* 0)
+(define *col* 0)
 (define *row-size* (get-row-size))
 (define *col-size* (get-col-size))
 
@@ -66,6 +68,21 @@
                   (l1))))))))))
 
 
+(define col+
+  (lambda ()
+    (if (< *col* *col-size*)
+        (set! *col* (+ *col* 1))
+        (set! *col* 0))
+    *col*))
+
+
+(define col-
+  (lambda ()
+    (if (> *col* 0)
+        (set! *col* (- *col* 1))
+        (set! *col* *col-size*))
+    *col*))
+
 
 
 (define move-up
@@ -94,7 +111,7 @@
   (lambda (x)
     (if (not (null? x))
         (begin
-          (display (caar x))
+          (display (cdaar x))
           (write-out2 (cdr x))))))
 
 
@@ -103,7 +120,7 @@
     (let l1 ((l x))
             (if (not (null? l))
                 (begin
-                  (display (caar l))
+                  (display (caaar l))
                   (l1 (cdr l)))))
     (let l2 ((len (length x)))
             (if (> len 1)
@@ -118,7 +135,7 @@
             (if (null? l)
                 (display #\space)
                 (begin
-                  (display (caar l))
+                  (display (caaar l))
                   (l1 (cdr l)))))
     (let l2 ((len (+ (length x) 1)))
             (if (> len 0)
@@ -136,13 +153,13 @@
 (define add-char
   (lambda (l i)
       (define rest (cdr l))
-      (define c (cons (cons i l) rest))
+      (define c (cons (cons (cons i (col+)) l) rest))
           (set-cdr! l c)
           (if (null? rest)   
             (display i)
-            (let ((next (car rest)))
-                 (set-cdr! next c)
-                 (write-out c)))))
+            (begin 
+              (set-cdr! (car rest) c)
+              (write-out c)))))
 
 (define delete-char
   (lambda (l)
@@ -156,9 +173,9 @@
               (begin 
                 (display #\space)
                 (display #\backspace))
-              (let ((next (car rest)))
-                   (set-cdr! next c)
-                   (write-out3 rest)))
+              (begin
+                (set-cdr! (car rest) c)
+                (write-out3 rest)))
           (input-loop c )))))
 
 
