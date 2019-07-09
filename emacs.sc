@@ -7,15 +7,15 @@
 (define raw
   (foreign-procedure "textmode_raw_mode" () int))
 
-(define get-row
+(define get-row-size
     (foreign-procedure "get_row" () int))
 
-(define get-col
+(define get-col-size
     (foreign-procedure "get_col" () int))
 
-(define *text* (cons (cons #\x00 '()) '()))
-(define *row* (get-row))
-(define *col* (get-col))
+(define *text* (cons (cons (cons #\x00 0) '()) '()))
+(define *row-size* (get-row-size))
+(define *col-size* (get-col-size))
 
 
 
@@ -44,7 +44,26 @@
 (clean-screem)
 (init-mouse)
 
-
+(define get-col
+  (lambda ()
+    (control)
+    (display #\6)
+    (display #\n)
+    (case (read-char)
+      (#\033
+        (case (read-char)
+          (#\[
+            (let l1 ()
+              (case (read-char)
+                (#\;
+                  (let l2 ((x (read-char))(y 0))
+                    (case x
+                      (#\R
+                        y)
+                      (else 
+                        (l2 (read-char) (+ (* y 10) (- (char->integer x) 48)))))))
+                (else 
+                  (l1))))))))))
 
 
 
@@ -75,7 +94,7 @@
   (lambda (x)
     (if (not (null? x))
         (begin
-          (display (caar x))
+          (display (caaar x))
           (write-out2 (cdr x))))))
 
 
@@ -84,7 +103,7 @@
     (let l1 ((l x))
             (if (not (null? l))
                 (begin
-                  (display (caar l))
+                  (display (caaar l))
                   (l1 (cdr l)))))
     (let l2 ((len (length x)))
             (if (> len 1)
@@ -99,7 +118,7 @@
             (if (null? l)
                 (display #\space)
                 (begin
-                  (display (caar l))
+                  (display (caaar l))
                   (l1 (cdr l)))))
     (let l2 ((len (+ (length x) 1)))
             (if (> len 0)
@@ -117,57 +136,43 @@
 (define add-char
   (lambda (l i)
       (define rest (cdr l))
-      (define c (cons (cons i l) rest))
+      (define c (cons (cons (cons i (get-col)) l) rest))
           (set-cdr! l c)
           (if (null? rest)   
             (display i)
-            (let ((next (car rest)))
-                 (set-cdr! next c)
-                 (write-out c)))))
+            (begin
+              (set-cdr! (car rest) c)
+              (write-out c)))))
 
 (define delete-char
   (lambda (l)
-    (if (null? (cdar l))
-        (alarm l)
-        (let ((c (cdar l))
-              (rest (cdr l)))
-          (set-cdr! c rest)
-          (display #\backspace)
-          (if (null? rest)
-              (begin 
-                (display #\space)
-                (display #\backspace))
-              (let ((next (car rest)))
-                   (set-cdr! next c)
-                   (write-out3 rest)))
-          (input-loop c )))))
-
-
-(define get-mouse-col
-  (lambda ()
-    (control)
-    (display #\6)
-    (display #\n)
-    (case (read-char)
-      (#\033
-        (case (read-char)
-          (#\[
-            (let l1 ()
-              (case (read-char)
-                (#\;
-                  (let l2 ((x (read-char))(y 0))
-                    (case x
-                      (#\R
-                        y)
-                      (else 
-                        (l2 (read-char) (+ (* y 10) (- (char->integer x) 48)))))))
-                (else 
-                  (l1))))))))))
+    (let ((c (cdar l))
+          (rest (cdr l)))
+         (if (null? c)
+             (alarm l)
+             (begin
+               (set-cdr! c rest)
+               (if (> (cdaar l) 0)
+                   (display #\backspace)
+                   (begin
+                     (move-up)
+                     (control)
+                     (display (get-col))
+                     (display #\C)
+                     (display #\backspace)))
+               (if (null? rest)
+                   (begin 
+                     (display #\space)
+                     (display #\backspace))
+                   (begin
+                     (set-cdr! (car rest) c)
+                     (write-out3 rest)))
+               (input-loop c ))))))
 
 
 (define switch-row-up
   (lambda (txt)
-    (let loop ((c *col*)(t txt))
+    (let loop ((c *col-size*)(t txt))
       (if (> c 0)
           (loop (- c 1)(cdar t))
           t))))
@@ -175,7 +180,7 @@
 
 (define switch-row-down
   (lambda (txt)
-    (let loop ((c *col*)(t txt))
+    (let loop ((c *col-size*)(t txt))
       (if (> c 0)
           (loop (- c 1)(cdr t))
           t))))
@@ -252,22 +257,22 @@
 
 ; (define switch-row-up
 ;   (lambda (txt f)
-;     (let loop ((c *col*)
-;                (c1 (get-mouse-col))
+;     (let loop ((c *col-size*)
+;                (c1 (get-col))
 ;                (t txt))
 ;       (move-left)
 ;       (if (> c 0)
-;           (if (> (get-mouse-col))
-;               (case (caar t)
+;           (if (> (get-col))
+;               (case (caaar t)
 ;                 (#\newline
-;                   (loop (- c (- c (get-mouse-col)))))
+;                   (loop (- c (- c (get-col)))))
 ;                 (else 
 ;                   (loop (- c 1)(c1)(cdar t))))
 ;               (begin
 ;                 (move-up)
 ;                 (display #\033)
 ;                 (display #\[)
-;                 (display *col*)
+;                 (display *col-size*)
 ;                 (display #\C)
 ;                 (loop (- c 1)(c1)(cdar t)))
 ;           t))))
