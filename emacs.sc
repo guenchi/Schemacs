@@ -114,6 +114,15 @@
     *col*))
 
 
+(define bookmark
+  (lambda ()
+    (ioctl #\s)))
+
+
+(define restore
+  (lambda ()
+    (ioctl #\u)))
+
 
 (define move-up
   (case-lambda 
