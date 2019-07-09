@@ -104,7 +104,7 @@
   (lambda (x)
     (if (not (null? x))
         (begin
-          (display (cdaar x))
+          (write (caaar x))
           (write-out2 (cdr x))))))
 
 
@@ -148,28 +148,47 @@
       (define rest (cdr l))
       (define c (cons (cons (cons i (col+)) l) rest))
           (set-cdr! l c)
+          (case i
+            (#\newline
+              (set! *col* 0)))
           (if (null? rest)   
             (display i)
             (begin 
               (set-cdr! (car rest) c)
               (write-out c)))))
 
+
 (define delete-char
   (lambda (l)
-    (if (null? (cdar l))
+    (define c (cdar l))
+    (define rest (cdr l))
+    (if (null? c)
         (alarm l)
-        (let ((c (cdar l))
-              (rest (cdr l)))
-          (set-cdr! c rest)
-          (display #\backspace)
-          (if (null? rest)
-              (begin 
-                (display #\space)
-                (display #\backspace))
-              (begin
-                (set-cdr! (car rest) c)
-                (write-out3 rest)))
-          (input-loop c )))))
+        (case (caaar l)
+          (#\newline
+            (set-cdr! c rest)
+            (if (not (null? rest))
+                (begin 
+                  (move-up)
+                  (ioctl (cdaar c) #\C))
+                (begin
+                  (set-cdr! (car rest) c)
+                  (ioctl #\K)
+                  (move-up)
+                  (ioctl (cdaar c) #\C)
+                  (write-out3 rest)))
+            (input-loop c ))
+          (else
+            (set-cdr! c rest)
+            (display #\backspace)
+            (if (null? rest)
+                (begin 
+                  (display #\space)
+                  (display #\backspace))
+                (begin
+                  (set-cdr! (car rest) c)
+                  (write-out3 rest)))
+            (input-loop c ))))))
 
 
 (define switch-row-up
