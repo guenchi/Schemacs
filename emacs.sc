@@ -41,13 +41,42 @@
   (lambda ()
     (ioctl #\K)))
 
-
 (define init-mouse
   (lambda ()
     (ioctl #\0 #\; #\0 #\H)))
 
+
+(define set-txtcolor
+  (lambda (c)
+    (ioctl
+      (case c
+        ('black 30)
+        ('red 31)
+        ('green 32)
+        ('yellow 33)
+        ('blue 34)
+        ('purple 35)
+        ('dark-green 36)
+        ('white 37)) #\m)))
+
+
+(define set-tbgcolor
+  (lambda (c)
+    (ioctl
+      (case c
+        ('black 40)
+        ('red 41)
+        ('green 42)
+        ('yellow 43)
+        ('blue 44)
+        ('purple 45)
+        ('dark-green 46)
+        ('white 47)) #\m)))
+  
+
 (clean-screem)
 (init-mouse)
+
 
 (define get-col
   (lambda ()
