@@ -13,7 +13,7 @@
 (define get-col-size
     (foreign-procedure "get_col" () int))
 
-(define *text* (cons (cons (cons #\x00 0) '()) '()))
+(define *text* (cons (cons #\x00 '()) '()))
 (define *row-size* (get-row-size))
 (define *col-size* (get-col-size))
 
@@ -94,7 +94,7 @@
   (lambda (x)
     (if (not (null? x))
         (begin
-          (display (caaar x))
+          (display (caar x))
           (write-out2 (cdr x))))))
 
 
@@ -103,7 +103,7 @@
     (let l1 ((l x))
             (if (not (null? l))
                 (begin
-                  (display (caaar l))
+                  (display (caar l))
                   (l1 (cdr l)))))
     (let l2 ((len (length x)))
             (if (> len 1)
@@ -118,7 +118,7 @@
             (if (null? l)
                 (display #\space)
                 (begin
-                  (display (caaar l))
+                  (display (caar l))
                   (l1 (cdr l)))))
     (let l2 ((len (+ (length x) 1)))
             (if (> len 0)
@@ -136,38 +136,30 @@
 (define add-char
   (lambda (l i)
       (define rest (cdr l))
-      (define c (cons (cons (cons i (get-col)) l) rest))
+      (define c (cons (cons i l) rest))
           (set-cdr! l c)
           (if (null? rest)   
             (display i)
-            (begin
-              (set-cdr! (car rest) c)
-              (write-out c)))))
+            (let ((next (car rest)))
+                 (set-cdr! next c)
+                 (write-out c)))))
 
 (define delete-char
   (lambda (l)
-    (let ((c (cdar l))
-          (rest (cdr l)))
-         (if (null? c)
-             (alarm l)
-             (begin
-               (set-cdr! c rest)
-               (if (> (cdaar l) 0)
-                   (display #\backspace)
-                   (begin
-                     (move-up)
-                     (control)
-                     (display (get-col))
-                     (display #\C)
-                     (display #\backspace)))
-               (if (null? rest)
-                   (begin 
-                     (display #\space)
-                     (display #\backspace))
-                   (begin
-                     (set-cdr! (car rest) c)
-                     (write-out3 rest)))
-               (input-loop c ))))))
+    (if (null? (cdar l))
+        (alarm l)
+        (let ((c (cdar l))
+              (rest (cdr l)))
+          (set-cdr! c rest)
+          (display #\backspace)
+          (if (null? rest)
+              (begin 
+                (display #\space)
+                (display #\backspace))
+              (let ((next (car rest)))
+                   (set-cdr! next c)
+                   (write-out3 rest)))
+          (input-loop c )))))
 
 
 (define switch-row-up
@@ -263,7 +255,7 @@
 ;       (move-left)
 ;       (if (> c 0)
 ;           (if (> (get-col))
-;               (case (caaar t)
+;               (case (caar t)
 ;                 (#\newline
 ;                   (loop (- c (- c (get-col)))))
 ;                 (else 
