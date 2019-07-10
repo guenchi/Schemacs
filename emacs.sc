@@ -248,7 +248,8 @@
             (if (null? rest)
                 (begin 
                   (display #\space)
-                  (display #\backspace))
+                  (if (not (= c 1))
+                    (display #\backspace)))
                 (begin
                   (set-cdr! (car rest) pre)
                   (update-delete rest r (col- c))))
