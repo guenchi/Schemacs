@@ -146,15 +146,6 @@
           (write-out (next x))))))
 
 
-; (define move-back
-;   (lambda (txt n)
-;     (if (> n 0)
-;         (case (payload txt)
-;           (#\newline 
-;             ))
-;         (else
-;           (move-left)
-;           (move-back (previous txt) (- n 1))))))
 
 
 
