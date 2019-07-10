@@ -144,37 +144,41 @@
 
 
 
-(define write-out2
+(define write-out
   (lambda (x)
     (if (not (null? x))
         (begin
           (write (cdaar x))
-          (write-out2 (cdr x))))))
+          (write-out (cdr x))))))
 
 
-(define write-out
-  (lambda (x)
-    (let l1 ((l x))
+(define update-input
+  (lambda (txt r c)
+    (let l1 ((l txt)
+             (c c))
             (if (not (null? l))
                 (begin
                   (display (caaar l))
-                  (l1 (cdr l)))))
-    (let l2 ((len (length x)))
-            (if (> len 1)
+                  (set-cdr! (caar l) c)
+                  (l1 (cdr l) (col+ c (caaar l))))))
+    (let l2 ((len (length txt)))
+            (if (> len 0)
                 (begin
                   (move-left)
                   (l2 (- len 1)))))))
 
 
-(define write-out3
-  (lambda (x)
-    (let l1 ((l x))
+(define update-delete
+  (lambda (txt r c)
+    (let l1 ((l txt)
+             (c c))
             (if (null? l)
                 (display #\space)
                 (begin
                   (display (caaar l))
-                  (l1 (cdr l)))))
-    (let l2 ((len (+ (length x) 1)))
+                  (set-cdr! (caar l) c)
+                  (l1 (cdr l) (col+ c (caaar l))))))
+    (let l2 ((len (+ (length txt) 1)))
             (if (> len 0)
                 (begin
                   (move-left)
@@ -196,7 +200,8 @@
           (display i)
           (begin 
             (set-cdr! (car rest) t)
-            (write-out t)))
+            (display i)
+            (update-input rest r (col+ c i))))
       (input-loop (cdr txt) r (col+ c i))))
 
 
@@ -218,8 +223,8 @@
                   (clean-line)
                   (move-up)
                   (move-right (cdaar pre))
-                  (write-out3 rest)))
-            (input-loop pre r (- (cdaar txt) 1)))
+                  (update-delete rest r (+ (cdaar pre) 1))))
+            (input-loop pre r c))
           (else
             (set-cdr! pre rest)
             (display #\backspace)
@@ -229,7 +234,7 @@
                   (display #\backspace))
                 (begin
                   (set-cdr! (car rest) pre)
-                  (write-out3 rest)))
+                  (update-delete rest r (col- c))))
             (input-loop pre r (col- c)))))))
 
 
@@ -280,7 +285,7 @@
 (define display-test
   (lambda (txt r c)
     (newline)
-    (write-out2 *text*)
+    (write-out *text*)
     (input-loop txt r c)))
 
 
@@ -313,28 +318,3 @@
 
 
 
-
-
-
-
-; (define switch-row-up
-;   (lambda (txt f)
-;     (let loop ((c *col-size*)
-;                (c1 (get-col))
-;                (t txt))
-;       (move-left)
-;       (if (> c 0)
-;           (if (> (get-col))
-;               (case (caar t)
-;                 (#\newline
-;                   (loop (- c (- c (get-col)))))
-;                 (else 
-;                   (loop (- c 1)(c1)(cdar t))))
-;               (begin
-;                 (move-up)
-;                 (display #\033)
-;                 (display #\[)
-;                 (display *col-size*)
-;                 (display #\C)
-;                 (loop (- c 1)(c1)(cdar t)))
-;           t))))
