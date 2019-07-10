@@ -152,21 +152,6 @@
           (write-out (cdr x))))))
 
 
-(define write-out2
-  (lambda (x)
-    (if (not (null? x))
-        (begin
-          (write (caaar x))
-          (write-out2 (cdr x))))))
-
-
-(define write-out3
-  (lambda (x)
-    (if (not (null? x))
-        (begin
-          (display (cdaar x))
-          (write-out3 (cdr x))))))
-
 
 
 (define update-input
@@ -300,25 +285,8 @@
             (input-loop before r (- c 1)))))))
 
 
-(define display-test
-  (lambda (txt r c)
-    (newline)
-    (write-out *text*)
-    (input-loop txt r c)))
+(load "init.sc")
 
-
-(define display-test2
-  (lambda (txt r c)
-    (newline)
-    (write-out2 *text*)
-    (input-loop txt r c)))
-
-
-(define display-test3
-  (lambda (txt r c)
-    (newline)
-    (write-out3 *text*)
-    (input-loop txt r c)))
 
 
 (define  input-loop
@@ -326,9 +294,9 @@
     (define i (read-char))
     (case i 
       (#\x01
-        (display-test txt r c))
+        (c-a txt r c))
       (#\x02
-        (display-test2 txt r c))
+        (c-b txt r c))
       (#\esc
         (case (read-char)
           (#\[
@@ -342,7 +310,7 @@
               (#\D
                 (left txt r c))))
         (#\esc
-          (display-test3 txt r c))))
+          (esc-esc txt r c))))
       (#\delete
         (delete txt r c))
       (else 
