@@ -217,11 +217,9 @@
           (else
             (conbine! pre rest)
             (display #\backspace)
-            (if (null? rest)
-                (begin 
-                  (display #\space)
-                  (if (not (= c 1))
-                    (display #\backspace)))
+            (display #\space)
+            (display #\backspace)
+            (if (not (null? rest))
                 (begin
                   (retrace! rest pre)
                   (update-delete rest r (col- c))))
