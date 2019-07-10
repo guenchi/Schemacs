@@ -14,8 +14,6 @@
     (foreign-procedure "get_col" () int))
 
 (define *text* (cons (cons (cons #\x00 0) '()) '()))
-(define *row* 0)
-(define *col* 0)
 (define *row-size* (get-row-size))
 (define *col-size* (get-col-size))
 
@@ -102,17 +100,15 @@
   (lambda (c i)
     (if (< c *col-size*)
         (case i
-          (#\newline 0)
+          (#\newline 1)
           (else (+ c 1)))
-        0)))
+        1)))
 
-; (define col-
-;   (lambda (c i)
-;     (if (> c 0)
-;         (case i
-;           (#\newline 0)
-;           (else (- c 1)))
-;         *col-size*)))
+(define col-
+  (lambda (c)
+    (if (> c 1)
+        (- c 1)
+        *col-size*)))
 
 
 
@@ -152,7 +148,7 @@
   (lambda (x)
     (if (not (null? x))
         (begin
-          (write (caaar x))
+          (write (cdaar x))
           (write-out2 (cdr x))))))
 
 
@@ -191,7 +187,7 @@
     (input-loop l r c)))
 
 
-(define add-char
+(define input
   (lambda (txt r c i)
       (define rest (cdr txt))
       (define t (cons (cons (cons i c) txt) rest))
@@ -201,10 +197,10 @@
           (begin 
             (set-cdr! (car rest) t)
             (write-out t)))
-      (input-loop (cdr txt) #f (col+ c i))))
+      (input-loop (cdr txt) r (col+ c i))))
 
 
-(define delete-char
+(define delete
   (lambda (txt r c)
     (define pre (cdar txt))
     (define rest (cdr txt))
@@ -223,7 +219,7 @@
                   (move-up)
                   (move-right (cdaar pre))
                   (write-out3 rest)))
-            (input-loop pre r c))
+            (input-loop pre r (- (cdaar txt) 1)))
           (else
             (set-cdr! pre rest)
             (display #\backspace)
@@ -234,7 +230,7 @@
                 (begin
                   (set-cdr! (car rest) pre)
                   (write-out3 rest)))
-            (input-loop pre r c))))))
+            (input-loop pre r (col- c)))))))
 
 
 (define switch-row-up
@@ -269,7 +265,7 @@
           (alarm txt r c)
           (begin
             (move-right)
-            (input-loop next r c))))))
+            (input-loop next r (+ c 1)))))))
 
 (define left
   (lambda (txt r c)
@@ -278,7 +274,7 @@
           (alarm txt r c)
           (begin
             (move-left)
-            (input-loop before r c))))))
+            (input-loop before r (- c 1)))))))
 
 
 (define display-test
@@ -307,12 +303,12 @@
         (#\esc
           (display-test txt r c))))
       (#\delete
-        (delete-char txt r c))
+        (delete txt r c))
       (else 
-        (add-char txt r c i)))))
+        (input txt r c i)))))
 
         
-(input-loop *text* 0 0)
+(input-loop *text* 0 1)
 
 
 
