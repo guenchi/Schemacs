@@ -13,13 +13,67 @@
 (define get-col-size
     (foreign-procedure "get_col" () int))
 
-(define *text* (cons (cons (cons #\x00 0) '()) '()))
-(define *row-size* (get-row-size))
-(define *col-size* (get-col-size))
-
-
-
 (raw)
+
+(define *text* (cons (cons (cons #\x00 0) '()) '()))
+
+(define row-size
+  (lambda ()
+    (virtual-register 0)))
+
+(define col-size
+  (lambda ()
+    (virtual-register 1)))
+
+(define row 
+    (lambda ()
+        (virtual-register 2)))
+
+(define set-row! 
+  (lambda (x)
+    (set-virtual-register! 2 x))) 
+
+
+(define col 
+    (lambda ()
+        (virtual-register 3)))
+
+(define set-col! 
+  (lambda (x)
+    (set-virtual-register! 3 x))) 
+
+
+(define row-
+  (lambda ()
+    (if (> (row) 1)
+        (set-row! (- (row) 1)))))
+
+(define row+
+  (lambda ()
+    (if (< (row) (row-size))
+        (set-row! (+ (row) 1)))))
+
+
+
+
+(define col+
+  (lambda ()
+    (if (< (col) (col-size))
+        (set-col! (+ (col) 1))
+        (begin
+         (set-col! 1)
+         (set-row! (+ (row) 1))))))
+
+
+(define col-
+  (lambda ()
+    (case (col)
+      (1
+        (set-col! (col-size))
+        (set-row! (- (row) 1)))
+      (else
+        (set-col! (- (col) 1))))))
+
 
 (define ioctl
   (lambda keys
@@ -74,41 +128,34 @@
 
 (clean-screem)
 (init-mouse)
+(set-virtual-register! 0 (get-row-size))
+(set-virtual-register! 1 (get-col-size))
+(set-row! 1)
+(set-col! 1)
 
 
 (define previous cdar)
 (define next cdr)
 (define payload caaar)
+
+(define set-payload! 
+  (lambda (t p)
+    (set-car! (caar t) p)))
+
+(define position cdaar)
+
+(define set-position! 
+  (lambda (t p)
+    (set-cdr! (caar t) p)))
+
 (define conbine! set-cdr!)
 
 (define retrace! 
   (lambda (rest pre)
     (set-cdr! (car rest) pre)))
 
-(define col+
-  (lambda (c i)
-    (if (< c *col-size*)
-        (case i
-          (#\newline 1)
-          (else (+ c 1)))
-        1)))
-
-(define col-
-  (lambda (c)
-    (if (> c 1)
-        (- c 1)
-        *col-size*)))
 
 
-
-(define bookmark
-  (lambda ()
-    (ioctl #\s)))
-
-
-(define restore
-  (lambda ()
-    (ioctl #\u)))
 
 
 (define move-up
@@ -146,60 +193,75 @@
           (write-out (next x))))))
 
 
+(define next-position
+  (lambda (txt c)
+    (case (payload txt)
+      (#\newline
+        1)
+      (else
+        (if (= c (col-size))
+            1 
+            (+ 1 c))))))
 
 
 
 (define update-input
-  (lambda (txt r c)
-    (let l1 ((l txt)
-             (c c))
-            (if (not (null? l))
-                (begin
-                  (display (payload l))
-                  (set-cdr! (caar l) c)
-                  (l1 (next l) (col+ c (payload l))))))
-    (move-to (- r 1) c)))
+  (lambda (txt)
+    (let l ((t txt)
+            (c (col)))
+      (if (not (null? t))
+          (begin
+            (display (payload t))
+            (set-position! t c)
+            (l (next t) (next-position t c)))))
+    (move-to (row) (col))))
 
 
 (define update-delete
-  (lambda (txt r c)
-    (let l1 ((l txt)
-             (c c))
-            (if (null? l)
-                (display #\space)
-                (begin
-                  (display (payload l))
-                  (set-cdr! (caar l) c)
-                  (l1 (next l) (col+ c (payload l))))))
-    (move-to (- r 1) c)))
+  (lambda (txt)
+    (let l ((t txt)
+            (c (col)))
+      (if (null? t)
+          (display #\space)
+          (begin
+            (display (payload t))
+            (set-position! t c)
+            (l (next t) (next-position t c)))))
+    (move-to (row) (col))))
 
 
 (define alarm
-  (lambda (l r c)
+  (lambda (txt)
     (display #\alarm)
-    (input-loop l r c)))
+    (input-loop txt)))
 
 
 (define input
-  (lambda (txt r c i)
+  (lambda (txt i)
       (define rest (next txt))
-      (define t (cons (cons (cons i c) txt) rest))
+      (define t (cons (cons (cons i (col)) txt) rest))
       (conbine! txt t)
+      (case i
+        (#\newline 
+          (row+)
+          (set-col! 1))
+        (else 
+          (col+)))
       (if (null? rest)   
           (display i)
           (begin 
             (retrace! rest t)
             (display i)
-            (update-input rest r (col+ c i))))
-      (input-loop (next txt) r (col+ c i))))
+            (update-input rest)))
+      (input-loop (next txt))))
 
 
 (define delete
-  (lambda (txt r c)
+  (lambda (txt)
     (define pre (previous txt))
     (define rest (next txt))
     (if (null? pre)
-        (alarm txt r c)
+        (alarm txt)
         (case (payload txt)
           (#\newline
             (conbine! pre rest)
@@ -212,23 +274,27 @@
                   (clean-line)
                   (move-up)
                   (move-right (cdaar pre))
-                  (update-delete rest r (+ (cdaar pre) 1))))
-            (input-loop pre r (+ (cdaar pre) 1)))
+                  (row-)
+                  (set-col! (+ (cdaar pre) 1))
+                  (update-delete rest)))
+            (input-loop pre))
           (else
             (conbine! pre rest)
             (display #\backspace)
             (display #\space)
-            (display #\backspace)
+            (if (> (col) 1)
+                    (display #\backspace))
+            (col-)
             (if (not (null? rest))
                 (begin
                   (retrace! rest pre)
-                  (update-delete rest r (col- c))))
-            (input-loop pre r (col- c)))))))
+                  (update-delete rest)))
+            (input-loop pre))))))
 
 
 (define switch-row-up
   (lambda (txt)
-    (let loop ((c *col-size*)(t txt))
+    (let loop ((c (col-size))(t txt))
       (if (> c 0)
           (loop (- c 1)(previous t))
           t))))
@@ -236,43 +302,47 @@
 
 (define switch-row-down
   (lambda (txt)
-    (let loop ((c *col-size*)(t txt))
+    (let loop ((c (col-size))(t txt))
       (if (> c 0)
           (loop (- c 1)(next t))
           t))))
 
 (define up
-  (lambda (txt r c)
+  (lambda (txt)
     (move-up)
     (input-loop (switch-row-up txt))))
 
 (define down
-  (lambda (txt r c)
+  (lambda (txt)
     (move-down)
     (input-loop (switch-row-up txt))))
 
 (define right
-  (lambda (txt r c)
+  (lambda (txt)
     (let ((rest (next txt)))
       (if (null? rest)
-          (alarm txt r c)
+          (alarm txt)
           (begin
             (move-right)
-            (input-loop rest r (+ c 1)))))))
+            (col+)
+            (input-loop rest))))))
 
 (define left
-  (lambda (txt r c)
+  (lambda (txt)
     (let ((pre (previous txt)))
       (if (null? pre)
-          (alarm txt r c)
+          (alarm txt)
           (case (payload pre)
             (#\newline 
               (move-up)
               (move-right (- (cdaar pre) 2))
-              (input-loop (previous pre) r (cdaar pre)))
+              (row-)
+              (set-col! (cdaar pre))
+              (input-loop (previous pre)))
             (else
               (move-left)
-              (input-loop pre r (- c 1))))))))
+              (col-)
+              (input-loop pre)))))))
 
 
 (load "init.sc")
@@ -280,36 +350,36 @@
 
 
 (define  input-loop
-  (lambda (txt r c)
+  (lambda (txt)
     (define i (read-char))
     (case i 
       (#\x01
-        (c-a txt r c))
+        (c-a txt))
       (#\x02
-        (c-b txt r c))
+        (c-b txt))
       (#\tab
-        (input-loop txt r c))
+        (input-loop txt))
       (#\esc
         (case (read-char)
           (#\[
             (case (read-char)
               (#\A
-                (up txt r c))
+                (up txt))
               (#\B
-                (down txt r c))
+                (down txt))
               (#\C
-                (right txt r c))
+                (right txt))
               (#\D
-                (left txt r c))))
+                (left txt))))
         (#\esc
-          (esc-esc txt r c))))
+          (esc-esc txt))))
       (#\delete
-        (delete txt r c))
+        (delete txt))
       (else 
-        (input txt r c i)))))
+        (input txt i)))))
 
         
-(input-loop *text* 0 1)
+(input-loop *text*)
 
 
 
