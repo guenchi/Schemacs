@@ -352,6 +352,15 @@
 (define  input-loop
   (lambda (txt)
     (define i (read-char))
+    (move-to (- (row-size) 1) 1)
+    (set-tbgcolor 'white)
+    (display " *Emacs on Chez Scheme* [ ")
+    (display (row))
+    (display ", ")
+    (display (col))
+    (display " ]                                              ")
+    (set-tbgcolor 'black)
+    (move-to (row) (col))
     (case i 
       (#\x01
         (c-a txt))
