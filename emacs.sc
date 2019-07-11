@@ -268,14 +268,14 @@
             (if (null? rest)
                 (begin 
                   (move-up)
-                  (move-right (cdaar pre)))
+                  (move-right (position pre)))
                 (begin
                   (retrace! rest pre)
                   (clean-line)
                   (move-up)
-                  (move-right (cdaar pre))
+                  (move-right (position pre))
                   (row-)
-                  (set-col! (+ (cdaar pre) 1))
+                  (set-col! (+ (position pre) 1))
                   (update-delete rest)))
             (input-loop pre))
           (else
@@ -335,9 +335,9 @@
           (case (payload pre)
             (#\newline 
               (move-up)
-              (move-right (- (cdaar pre) 2))
+              (move-right (- (position pre) 2))
               (row-)
-              (set-col! (cdaar pre))
+              (set-col! (position pre))
               (input-loop (previous pre)))
             (else
               (move-left)
