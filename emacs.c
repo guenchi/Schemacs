@@ -7,7 +7,7 @@
 struct termios raw;
 struct winsize size;
 
-int textmode_raw_mode(void)
+int raw_on(void)
 {
 
     if (tcgetattr(0, &raw) == -1)
@@ -16,6 +16,8 @@ int textmode_raw_mode(void)
 
     raw.c_lflag &= ~ECHO;
     raw.c_lflag &= ~ICANON;
+    raw.c_lflag &= ~ISIG;
+
 
     // raw.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
     // raw.c_oflag &= ~(OPOST);
@@ -26,6 +28,22 @@ int textmode_raw_mode(void)
 
     return tcsetattr(0, TCSAFLUSH, &raw);
 }
+
+
+int raw_off(void)
+{
+
+    if (tcgetattr(0, &raw) == -1)
+        return -1;
+
+
+    raw.c_lflag |= ECHO;
+    raw.c_lflag |= ICANON;
+    raw.c_lflag |= ISIG;
+
+    return tcsetattr(0, TCSAFLUSH, &raw);
+}
+
 
 
 int get_row(void)

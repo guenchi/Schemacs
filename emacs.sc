@@ -4,8 +4,11 @@
 
 (load-shared-object "emacs.so")
 
-(define raw
-  (foreign-procedure "textmode_raw_mode" () int))
+(define raw-on
+  (foreign-procedure "raw_on" () int))
+
+(define raw-off
+  (foreign-procedure "raw_off" () int))
 
 (define get-row-size
     (foreign-procedure "get_row" () int))
@@ -13,7 +16,6 @@
 (define get-col-size
     (foreign-procedure "get_col" () int))
 
-(raw)
 
 (define *text* (cons (cons (cons #\x00 0) '()) '()))
 
@@ -21,9 +23,18 @@
   (lambda ()
     (virtual-register 0)))
 
+(define set-row-size! 
+  (lambda (x)
+    (set-virtual-register! 0 x))) 
+
 (define col-size
   (lambda ()
     (virtual-register 1)))
+
+
+(define set-col-size! 
+  (lambda (x)
+    (set-virtual-register! 1 x)))
 
 (define row 
     (lambda ()
@@ -38,9 +49,19 @@
     (lambda ()
         (virtual-register 3)))
 
+
 (define set-col! 
   (lambda (x)
     (set-virtual-register! 3 x))) 
+
+(define footer
+  (lambda ()
+    (virtual-register 4)))
+
+(define set-footer!
+  (lambda (x)
+    (set-virtual-register! 4 x)))
+
 
 
 (define row-
@@ -84,6 +105,43 @@
           (begin 
             (display (car l))
             (loop (cdr l)))))))
+
+
+(define message
+  (case-lambda
+    (()
+      (move-to (footer) 1)
+      (set-tbgcolor 'white)
+      (display " *Emacs on Chez Scheme* [ ")
+      (display (row))
+      (display ", ")
+      (display (col))
+      (display " ]                                              ")
+      (set-tbgcolor 'black)
+      (move-to (row-size) 1)
+      (display "                                  ")
+      (move-to (row) (col)))
+    ((str)
+      (move-to (footer) 1)
+      (set-tbgcolor 'white)
+      (display " *Emacs on Chez Scheme* [ ")
+      (display (row))
+      (display ", ")
+      (display (col))
+      (display " ]                                              ")
+      (set-tbgcolor 'black)
+      (move-to (row-size) 1)
+      (display str)
+      (move-to (row) (col)))))
+
+
+(define quit
+  (lambda ()
+    (raw-off)
+    (clean-screem)
+    (init-mouse)
+    (exit)))
+
         
 (define clean-screem
   (lambda ()
@@ -125,13 +183,14 @@
         ('dark-green 46)
         ('white 47)) #\m)))
   
-
+(raw-on)
 (clean-screem)
 (init-mouse)
-(set-virtual-register! 0 (get-row-size))
-(set-virtual-register! 1 (get-col-size))
+(set-row-size! (get-row-size))
+(set-col-size! (get-col-size))
 (set-row! 1)
 (set-col! 1)
+(set-footer! (- (row-size) 1))
 
 
 (define previous cdar)
@@ -153,7 +212,6 @@
 (define retrace! 
   (lambda (rest pre)
     (set-cdr! (car rest) pre)))
-
 
 
 
@@ -233,6 +291,7 @@
 (define alarm
   (lambda (txt)
     (display #\alarm)
+    (message "Operating fail~") 
     (input-loop txt)))
 
 
@@ -253,6 +312,7 @@
             (retrace! rest t)
             (display i)
             (update-input rest)))
+      (message) 
       (input-loop (next txt))))
 
 
@@ -277,6 +337,7 @@
                   (row-)
                   (set-col! (+ (position pre) 1))
                   (update-delete rest)))
+            (message) 
             (input-loop pre))
           (else
             (conbine! pre rest)
@@ -289,6 +350,7 @@
                 (begin
                   (retrace! rest pre)
                   (update-delete rest)))
+            (message) 
             (input-loop pre))))))
 
 
@@ -338,10 +400,12 @@
               (move-right (- (position pre) 2))
               (row-)
               (set-col! (position pre))
+              (message "") 
               (input-loop (previous pre)))
             (else
               (move-left)
               (col-)
+              (message) 
               (input-loop pre)))))))
 
 
@@ -352,20 +416,21 @@
 (define  input-loop
   (lambda (txt)
     (define i (read-char))
-    (move-to (- (row-size) 1) 1)
-    (set-tbgcolor 'white)
-    (display " *Emacs on Chez Scheme* [ ")
-    (display (row))
-    (display ", ")
-    (display (col))
-    (display " ]                                              ")
-    (set-tbgcolor 'black)
-    (move-to (row) (col))
     (case i 
       (#\x01
+        (message "C-A") 
         (c-a txt))
       (#\x02
+        (message "C-B") 
         (c-b txt))
+      (#\x18
+        (message "C-X")  
+        (case (read-char)
+          (#\x03
+            (quit))
+          (else
+            (message "C-X : command not found")
+            (input-loop txt))))
       (#\tab
         (input-loop txt))
       (#\esc
@@ -387,7 +452,7 @@
       (else 
         (input txt i)))))
 
-        
+(message)        
 (input-loop *text*)
 
 
