@@ -269,6 +269,9 @@
             (c (col)))
       (if (not (null? t))
           (begin
+            (case (payload t)
+              (#\newline 
+                (clean-line)))
             (display (payload t))
             (set-position! t c)
             (l (next t) (next-position t c)))))
