@@ -222,7 +222,15 @@
 (define start
   (lambda ()
     (clean-screem)
-    (init-mouse)))
+    (init-mouse)
+    (set! *text* (cons (cons (cons #\x00 0) '()) '()))
+    (set-row-size! (get-row-size))
+    (set-col-size! (get-col-size))
+    (set-row! 1)
+    (set-col! 1)
+    (set-line! 1)
+    (set-lines! 1)
+    (set-footer! (- (row-size) 1))))
 
 
 (define set-txtcolor
@@ -551,13 +559,6 @@ To quit:  C-x C-c")))
   (raw-on)
   (start)
   (welcome)
-  (set-row-size! (get-row-size))
-  (set-col-size! (get-col-size))
-  (set-row! 1)
-  (set-col! 1)
-  (set-line! 1)
-  (set-lines! 1)
-  (set-footer! (- (row-size) 1))
   (message)        
   (input-loop *text*))
 
