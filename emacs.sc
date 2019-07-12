@@ -402,14 +402,14 @@
     (let ((pre (previous txt)))
       (if (null? pre)
           (alarm txt)
-          (case (payload pre)
+          (case (payload txt)
             (#\newline 
               (move-up)
-              (move-right (- (position pre) 2))
+              (move-right (- (position txt) 2))
               (row-)
-              (set-col! (position pre))
+              (set-col! (position txt))
               (message "") 
-              (input-loop (previous pre)))
+              (input-loop pre))
             (else
               (move-left)
               (col-)
