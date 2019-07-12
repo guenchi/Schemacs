@@ -195,14 +195,7 @@
       (display str)
       (clean-line)
       (move-to (row) (col)))))
-
-
-(define quit
-  (lambda ()
-    (raw-off)
-    (clean-screem)
-    (init-mouse)
-    (exit)))
+  
 
         
 (define clean-screem
@@ -216,6 +209,20 @@
 (define init-mouse
   (lambda ()
     (ioctl #\0 #\; #\0 #\H)))
+
+
+
+(define quit
+  (lambda ()
+    (raw-off)
+    (clean-screem)
+    (init-mouse)
+    (exit)))
+
+(define start
+  (lambda ()
+    (clean-screem)
+    (init-mouse)))
 
 
 (define set-txtcolor
@@ -245,16 +252,25 @@
         ('dark-green 46)
         ('white 47)) #\m)))
   
-(raw-on)
-(clean-screem)
-(init-mouse)
-(set-row-size! (get-row-size))
-(set-col-size! (get-col-size))
-(set-row! 1)
-(set-col! 1)
-(set-line! 1)
-(set-lines! 1)
-(set-footer! (- (row-size) 1))
+
+
+(define welcome
+  (lambda ()
+    (printf 
+"Welcome to Emacs on Chez Scheme
+
+
+
+Author:  github.com/guenchi
+License: MIT
+
+
+This implementation of Emacs is written by pure Scheme, and also use Scheme instead of elisp as extended language.
+
+
+To start: C-x C-n
+To quit:  C-x C-c")))
+
 
 
 (define previous cdar)
@@ -493,18 +509,22 @@
     (define i (read-char))
     (case i 
       (#\x01
-        (message "C-A                         ") 
+        (message "C-a") 
         (c-a txt))
       (#\x02
-        (message "C-B                         ") 
+        (message "C-b") 
         (c-b txt))
       (#\x18
-        (message "C-X                          ")  
+        (message "C-x")  
         (case (read-char)
           (#\x03
             (quit))
+          (#\xE
+            (start)
+            (message "C-x C-n")
+            (input-loop txt))
           (else
-            (message "C-X : command not found       ")
+            (message "C-x : command not found")
             (input-loop txt))))
       (#\tab
         (input-loop txt))
@@ -527,8 +547,19 @@
       (else 
         (input txt i)))))
 
-(message)        
-(input-loop *text*)
+(let ()
+  (raw-on)
+  (start)
+  (welcome)
+  (set-row-size! (get-row-size))
+  (set-col-size! (get-col-size))
+  (set-row! 1)
+  (set-col! 1)
+  (set-line! 1)
+  (set-lines! 1)
+  (set-footer! (- (row-size) 1))
+  (message)        
+  (input-loop *text*))
 
 
 
