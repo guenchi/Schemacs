@@ -293,7 +293,7 @@
 (define alarm
   (lambda (txt)
     (display #\alarm)
-    (message "Operating fail~") 
+    (message "Operating fail~                    ") 
     (input-loop txt)))
 
 
@@ -303,9 +303,10 @@
       (define t (cons (cons (cons i (col)) txt) rest))
       (conbine! txt t)
       (case i
-        (#\newline 
+        (#\newline
           (row+)
-          (set-col! 1))
+          (set-col! 1)
+          (clean-line))
         (else 
           (col+)))
       (if (null? rest)   
@@ -422,18 +423,18 @@
     (define i (read-char))
     (case i 
       (#\x01
-        (message "C-A") 
+        (message "C-A                         ") 
         (c-a txt))
       (#\x02
-        (message "C-B") 
+        (message "C-B                         ") 
         (c-b txt))
       (#\x18
-        (message "C-X")  
+        (message "C-X                          ")  
         (case (read-char)
           (#\x03
             (quit))
           (else
-            (message "C-X : command not found")
+            (message "C-X : command not found       ")
             (input-loop txt))))
       (#\tab
         (input-loop txt))
