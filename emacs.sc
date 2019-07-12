@@ -399,22 +399,22 @@
 
 (define left
   (lambda (txt)
-    (let ((pre (previous txt)))
-      (if (null? pre)
-          (alarm txt)
-          (case (payload txt)
-            (#\newline 
-              (move-up)
-              (move-right (- (position txt) 2))
-              (row-)
-              (set-col! (position txt))
-              (message "") 
-              (input-loop pre))
-            (else
-              (move-left)
-              (col-)
-              (message) 
-              (input-loop pre)))))))
+    (define pre (previous txt))
+    (if (null? pre)
+        (alarm txt)
+        (case (payload txt)
+          (#\newline 
+            (move-up)
+            (move-right (- (position txt) 2))
+            (row-)
+            (set-col! (position txt))
+            (message "") 
+            (input-loop pre))
+          (else
+            (move-left)
+            (col-)
+            (message) 
+            (input-loop pre))))))
 
 
 (load "init.sc")
