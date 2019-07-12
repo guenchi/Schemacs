@@ -1,7 +1,11 @@
 # Emacs
 Emacs implementation on Chez Scheme
 
+![img](https://github.com/guenchi/Emacs/blob/master/img/0.png)
 
-To Exit: Ctrl-X Ctrl-C 
+![img](https://github.com/guenchi/Emacs/blob/master/img/1.png)
+
+![img](https://github.com/guenchi/Emacs/blob/master/img/2.png)
+
 
 
