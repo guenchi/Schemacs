@@ -279,7 +279,9 @@
   (lambda (txt)
     (let l ((t txt)
             (c (col)))
-      (if (null? t)
+      (if (or (null? t) 
+              (equal? (payload t) 
+                      #\newline))
           (display #\space)
           (begin
             (display (payload t))
