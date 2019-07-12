@@ -54,13 +54,44 @@
   (lambda (x)
     (set-virtual-register! 3 x))) 
 
+
+(define col-cache
+    (lambda ()
+        (virtual-register 4)))
+
+
+(define set-col-cache!
+    (lambda ()
+        (set-virtual-register! 4 (col))))
+
+
+(define lines
+  (lambda ()
+    (virtual-register 5)))
+
+
+(define set-lines!
+  (lambda (x)
+    (set-virtual-register! 5 x))) 
+
+
+(define line
+  (lambda ()
+    (virtual-register 6)))
+
+
+(define set-line!
+  (lambda (x)
+    (set-virtual-register! 6 x))) 
+
+
 (define footer
   (lambda ()
-    (virtual-register 4)))
+    (virtual-register 7)))
 
 (define set-footer!
   (lambda (x)
-    (set-virtual-register! 4 x)))
+    (set-virtual-register! 7 x)))
 
 
 
@@ -75,6 +106,26 @@
         (set-row! (+ (row) 1)))))
 
 
+(define line-
+  (lambda ()
+    (set-line! (- (line) 1))))
+
+
+(define line+
+  (lambda ()
+    (set-line! (+ (line) 1))))
+
+
+(define lines-
+  (lambda ()
+    (set-line! (- (line) 1))
+    (set-lines! (- (lines) 1))))
+
+
+(define lines+
+  (lambda ()
+    (set-line! (+ (line) 1))
+    (set-lines! (+ (lines) 1))))
 
 
 (define col+
@@ -82,14 +133,16 @@
     (if (< (col) (col-size))
         (set-col! (+ (col) 1))
         (begin
-         (set-col! 1)
-         (set-row! (+ (row) 1))))))
+          (lines+)
+          (set-col! 1)
+          (set-row! (+ (row) 1))))))
 
 
 (define col-
   (lambda ()
     (case (col)
       (1
+        (lines-)
         (set-col! (col-size))
         (set-row! (- (row) 1)))
       (else
@@ -116,10 +169,14 @@
       (display (row))
       (display ", ")
       (display (col))
-      (display " ]                                              ")
+      (display " ] L")
+      (display (line))
+      (display " / ")
+      (display (lines))
+      (clean-line)
       (set-tbgcolor 'black)
       (move-to (row-size) 1)
-      (display "                                  ")
+      (clean-line)
       (move-to (row) (col)))
     ((str)
       (move-to (footer) 1)
@@ -128,10 +185,15 @@
       (display (row))
       (display ", ")
       (display (col))
-      (display " ]                                              ")
+      (display " ] L")
+      (display (line))
+      (display " / ")
+      (display (lines))
+      (clean-line)          
       (set-tbgcolor 'black)
       (move-to (row-size) 1)
       (display str)
+      (clean-line)
       (move-to (row) (col)))))
 
 
@@ -190,6 +252,8 @@
 (set-col-size! (get-col-size))
 (set-row! 1)
 (set-col! 1)
+(set-line! 1)
+(set-lines! 1)
 (set-footer! (- (row-size) 1))
 
 
@@ -308,6 +372,7 @@
     (case i
       (#\newline
         (row+)
+        (lines+)
         (set-col! 1)
         (clean-line))
       (else 
@@ -331,6 +396,7 @@
         (case (payload txt)
           (#\newline
             (conbine! pre rest)
+            (lines-)
             (if (null? rest)
                 (begin 
                   (move-up)
@@ -408,6 +474,7 @@
             (move-right (- (position txt) 2))
             (row-)
             (set-col! (position txt))
+            (line-)
             (message "") 
             (input-loop pre))
           (else
