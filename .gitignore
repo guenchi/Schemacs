@@ -6,3 +6,5 @@
 *.scm#*
 .#*.scm
 *.so
+img/.DS_Store
+.DS_Store
