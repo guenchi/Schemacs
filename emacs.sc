@@ -328,7 +328,9 @@
             (if (null? rest)
                 (begin 
                   (move-up)
-                  (move-right (position pre)))
+                  (move-right (position pre))
+                  (row-)
+                  (set-col! (+ (position pre) 1)))
                 (begin
                   (retrace! rest pre)
                   (clean-line)
