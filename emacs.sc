@@ -302,24 +302,24 @@
 
 (define input
   (lambda (txt i)
-      (define rest (next txt))
-      (define t (cons (cons (cons i (col)) txt) rest))
-      (conbine! txt t)
-      (case i
-        (#\newline
-          (row+)
-          (set-col! 1)
-          (clean-line))
-        (else 
-          (col+)))
-      (if (null? rest)   
+    (define rest (next txt))
+    (define t (cons (cons (cons i (col)) txt) rest))
+    (conbine! txt t)
+    (case i
+      (#\newline
+        (row+)
+        (set-col! 1)
+        (clean-line))
+      (else 
+        (col+)))
+    (if (null? rest)   
+        (display i)
+        (begin 
+          (retrace! rest t)
           (display i)
-          (begin 
-            (retrace! rest t)
-            (display i)
-            (update-input rest)))
-      (message) 
-      (input-loop (next txt))))
+          (update-input rest)))
+    (message) 
+    (input-loop (next txt))))
 
 
 (define delete
