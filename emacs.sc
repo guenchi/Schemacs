@@ -160,37 +160,31 @@
             (loop (cdr l)))))))
 
 
+(define auto-info
+  (lambda ()
+    (move-to (footer) 1)
+    (set-tbgcolor 'white)
+    (display " *Emacs on Chez Scheme* [ ")
+    (display (row))
+    (display ", ")
+    (display (col))
+    (display " ] L")
+    (display (line))
+    (display " / ")
+    (display (lines))
+    (clean-line)
+    (set-tbgcolor 'black)))
+
+
 (define message
   (case-lambda
     (()
-      (move-to (footer) 1)
-      (set-tbgcolor 'white)
-      (display " *Emacs on Chez Scheme* [ ")
-      (display (row))
-      (display ", ")
-      (display (col))
-      (display " ] L")
-      (display (line))
-      (display " / ")
-      (display (lines))
-      (clean-line)
-      (set-tbgcolor 'black)
+      (auto-info)
       (move-to (row-size) 1)
       (clean-line)
       (move-to (row) (col)))
     ((str)
-      (move-to (footer) 1)
-      (set-tbgcolor 'white)
-      (display " *Emacs on Chez Scheme* [ ")
-      (display (row))
-      (display ", ")
-      (display (col))
-      (display " ] L")
-      (display (line))
-      (display " / ")
-      (display (lines))
-      (clean-line)          
-      (set-tbgcolor 'black)
+      (auto-info)
       (move-to (row-size) 1)
       (display str)
       (clean-line)
@@ -269,8 +263,8 @@
 
 
 
-Author:  github.com/guenchi
 License: MIT
+Author:  github.com/guenchi
 
 
 This implementation of Emacs is written by pure Scheme, and also use Scheme instead of elisp as extended language.
@@ -384,7 +378,7 @@ To quit:  C-x C-c")))
 (define alarm
   (lambda (txt)
     (display #\alarm)
-    (message "Operating fail~                    ") 
+    (message "Operating fail~") 
     (input-loop txt)))
 
 
