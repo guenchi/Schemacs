@@ -524,7 +524,7 @@ To quit:  C-x C-c")))
           (#\xE
             (start)
             (message "C-x C-n")
-            (input-loop txt))
+            (input-loop *text*))
           (else
             (message "C-x : command not found")
             (input-loop txt))))
