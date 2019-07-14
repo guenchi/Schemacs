@@ -263,8 +263,8 @@
 
 
 
-License: MIT
 Author:  github.com/guenchi
+License: MIT
 
 
 This implementation of Emacs is written by pure Scheme, and also use Scheme instead of elisp as extended language.
