@@ -337,9 +337,9 @@
 
 (define undo-insert
   (lambda (txt act i)
-    (define pre (previous txt))
-    (define t (cons (cons (cons i (col)) pre) txt))
-    (conbine! pre t)
+    (define rest (next txt))
+    (define t (cons (cons (cons i (col)) txt) rest))
+    (conbine! txt t)
     (case i
       (#\newline
         (row+)
@@ -347,13 +347,13 @@
         (set-col! 1)
         (clean-line)))
     (move-to (row) (col))
-    (if (null? txt)   
+    (if (null? rest)   
       (display i)
       (begin 
-        (retrace! txt t)
+        (retrace! rest t)
         (display i)
         (col+)
-        (update-insert txt)))
+        (update-insert rest)))
     (input-loop t (previous act))))
 
 
@@ -464,6 +464,16 @@
             (begin
               (row+)
               (line+)))))
+    (define p1
+      (lambda (t)
+        (if (act-info act)
+          (position t)
+          (- (position t) 1))))
+    (define p2
+      (lambda (t)
+        (if (act-info act)
+          (position t)
+          (+ (position t) 1))))
     (let loop ((t txt))
       (cond 
         ((< l (line))
@@ -472,9 +482,9 @@
         ((> l (line))
            (down t)
            (loop (next t)))
-        ((< c (position t))
+        ((< c (p1 t))
            (loop (previous t)))
-        ((> c (position t))
+        ((> c (p2 t))
            (loop (next t)))
         (else
           (set-col! c)
@@ -744,8 +754,14 @@
         (message "C-a") 
         (c-a txt act))
       (#\x02
-        (message "C-b") 
-        (c-b txt act))
+        (message "C-b Backward") 
+        (left txt act))
+      (#\x06
+        (message "C-f Forward")
+        (right txt act))
+      (#\x10
+        (message "C-p Previous line")
+        (up txt act))
       (#\x15
         (undo txt act))
       (#\x18
@@ -764,6 +780,9 @@
           (else
             (message "C-x : command not found")
             (input-loop txt act))))
+      (#\xE
+        (message "C-n Next line")
+        (down txt act))
       (#\tab
         (input-loop txt))
       (#\esc

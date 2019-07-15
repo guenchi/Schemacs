@@ -4,38 +4,29 @@
 ;; 'black 'red 'green 'yellow 'blue 'purple 'dark-green 'white
 
 
-(define display-with-char
+(define display2
   (lambda (x)
     (if (not (null? x))
         (begin
-          (write (caaar x))
-          (display-with-char (cdr x))))))
+          (display (caaar x))
+          (display2 (cdr x))))))
 
 
-(define display-with-loc
+(define display3
   (lambda (x)
     (if (not (null? x))
         (begin
           (display (cdaar x))
-          (display-with-loc (cdr x))))))
+          (display3 (cdr x))))))
 
 
 (define c-a
   (lambda (txt act)
     (newline)
     (write-out *text*)
-    (input-loop txt act)))
-
-
-(define c-b
-  (lambda (txt act)
     (newline)
-    (display-with-char *text*)
-    (input-loop txt act)))
-
-
-(define esc-esc
-  (lambda (txt act)
+    (display2 *acts*)
     (newline)
-    (display-with-loc *text*)
+    (display3 *acts*)
     (input-loop txt act)))
+
