@@ -342,7 +342,6 @@
     (conbine! txt t)
     (case i
       (#\newline
-        (row+)
         (lines+)
         (set-col! 1)
         (clean-line)))
@@ -366,7 +365,7 @@
           (#\newline
             (conbine! pre rest)
             (move-to (row) (col))
-            (lines-)
+            (set-lines! (- (lines) 1))
             (if (null? rest)
                 (begin 
                   (row-)
@@ -384,10 +383,57 @@
             (display #\space)
             (display #\backspace)
             (if (not (null? rest))
-                (begin
+                  (begin 
                   (retrace! rest pre)
                   (update-delete rest)))))
         (input-loop pre (previous act))))
+
+
+(define undo
+  (lambda (txt act)
+    (define l (line-info act))
+    (define c (col-info act))
+    (define up
+      (lambda (k)
+        (if (or (equal? (payload k) #\newline) 
+                (= (position k) 80))
+            (begin 
+              (row-)
+              (line-)))))
+    (define down
+      (lambda (k)
+        (if (or (equal? (payload k) #\newline) 
+                (= (position k) 80))
+            (begin
+              (row+)
+              (line+)))))
+    (define p1
+      (lambda (t)
+        (if (act-info act)
+          (position t)
+          (- (position t) 1))))
+    (define p2
+      (lambda (t)
+        (if (act-info act)
+          (position t)
+          (+ (position t) 1))))
+    (let loop ((t txt))
+      (cond 
+        ((< l (line))
+           (up t)
+           (loop (previous t)))
+        ((> l (line))
+           (down t)
+           (loop (next t)))
+        ((< c (p1 t))
+           (loop (previous t)))
+        ((> c (p2 t))
+           (loop (next t)))
+        (else
+          (set-col! c)
+          (if (act-info act)
+              (undo-delete t act (char-info act))
+              (undo-insert t act (char-info act))))))))
 
 
 (define redo-insert
@@ -445,52 +491,6 @@
     (input-loop pre act)))
 
 
-
-(define undo
-  (lambda (txt act)
-    (define l (line-info act))
-    (define c (col-info act))
-    (define up
-      (lambda (k)
-        (if (or (equal? (payload k) #\newline) 
-                (= (position k) 80))
-            (begin 
-              (row-)
-              (line-)))))
-    (define down
-      (lambda (k)
-        (if (or (equal? (payload k) #\newline) 
-                (= (position k) 80))
-            (begin
-              (row+)
-              (line+)))))
-    (define p1
-      (lambda (t)
-        (if (act-info act)
-          (position t)
-          (- (position t) 1))))
-    (define p2
-      (lambda (t)
-        (if (act-info act)
-          (position t)
-          (+ (position t) 1))))
-    (let loop ((t txt))
-      (cond 
-        ((< l (line))
-           (up t)
-           (loop (previous t)))
-        ((> l (line))
-           (down t)
-           (loop (next t)))
-        ((< c (p1 t))
-           (loop (previous t)))
-        ((> c (p2 t))
-           (loop (next t)))
-        (else
-          (set-col! c)
-          (if (act-info act)
-              (undo-delete t act (char-info act))
-              (undo-insert t act (char-info act))))))))
 
 
 (define redo
