@@ -478,8 +478,9 @@ To quit:  C-x C-c")))
 
 (define redo
   (lambda (txt act)
-    (define l (line-info act))
-    (define c (col-info act))
+    (define n (next act))
+    (define l (line-info n))
+    (define c (col-info n))
     (define up
       (lambda (k)
         (if (or (equal? (payload k) #\newline) 
@@ -508,9 +509,9 @@ To quit:  C-x C-c")))
            (loop (next t)))
         (else
           (set-col! c)
-          (if (act-info act)
-              (redo-ins t (next act) (char-info act))
-              (redo-del t (next act) (char-info act))))))))
+          (if (act-info n)
+              (redo-ins t act (char-info n))
+              (redo-del t act (char-info n))))))))
 
 
 
