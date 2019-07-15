@@ -1,4 +1,4 @@
-# Emacs
+# SchEmacs
 Emacs implementation by Scheme
 
 ![img](https://github.com/guenchi/Emacs/blob/master/img/0.png)
