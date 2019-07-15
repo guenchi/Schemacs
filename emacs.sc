@@ -328,7 +328,7 @@ To quit:  C-x C-c")))
     (cdr (acts-info act))))
 
 
-(define undo-ins
+(define undo-insert
   (lambda (txt act i)
     (define pre (previous txt))
     (define t (cons (cons (cons i (col)) pre) txt))
@@ -351,7 +351,7 @@ To quit:  C-x C-c")))
 
 
 
-(define undo-del
+(define undo-delete
   (lambda (txt act i)
     (define pre (previous txt))
     (define rest (next txt))
@@ -383,7 +383,7 @@ To quit:  C-x C-c")))
         (input-loop pre (previous act))))
 
 
-(define redo-ins
+(define redo-insert
   (lambda (txt act i)
     (define pre (previous txt))
     (define t (cons (cons (cons i (col)) pre) txt))
@@ -406,7 +406,7 @@ To quit:  C-x C-c")))
 
 
 
-(define redo-del
+(define redo-delete
   (lambda (txt act i)
     (define pre (previous txt))
     (define rest (next txt))
@@ -472,8 +472,8 @@ To quit:  C-x C-c")))
         (else
           (set-col! c)
           (if (act-info act)
-              (undo-del t act (char-info act))
-              (undo-ins t act (char-info act))))))))
+              (undo-delete t act (char-info act))
+              (undo-insert t act (char-info act))))))))
 
 
 (define redo
@@ -510,8 +510,8 @@ To quit:  C-x C-c")))
         (else
           (set-col! c)
           (if (act-info n)
-              (redo-ins t act (char-info n))
-              (redo-del t act (char-info n))))))))
+              (redo-insert t act (char-info n))
+              (redo-delete t act (char-info n))))))))
 
 
 
@@ -562,7 +562,7 @@ To quit:  C-x C-c")))
 
 
 
-(define update-input
+(define update-insert
   (lambda (txt)
     (let l ((t txt)
             (c (col)))
@@ -599,7 +599,7 @@ To quit:  C-x C-c")))
     (input-loop txt act)))
 
 
-(define input
+(define insert
   (lambda (txt act i)
     (define rest (next txt))
     (define t (cons (cons (cons i (col)) txt) rest))
@@ -618,7 +618,7 @@ To quit:  C-x C-c")))
         (begin 
           (retrace! rest t)
           (display i)
-          (update-input rest)))
+          (update-insert rest)))
     (message) 
     (input-loop t (next act))))
 
@@ -776,7 +776,7 @@ To quit:  C-x C-c")))
       (#\delete
         (delete txt act))
       (else 
-        (input txt act i)))))
+        (insert txt act i)))))
 
 (let ()
   (raw-on)
