@@ -328,7 +328,7 @@ To quit:  C-x C-c")))
     (cdr (acts-info act))))
 
 
-(define ins
+(define undo-ins
   (lambda (txt act i)
     (define pre (previous txt))
     (define t (cons (cons (cons i (col)) pre) txt))
@@ -351,7 +351,7 @@ To quit:  C-x C-c")))
 
 
 
-(define del
+(define undo-del
   (lambda (txt act i)
     (define pre (previous txt))
     (define rest (next txt))
@@ -383,6 +383,61 @@ To quit:  C-x C-c")))
         (input-loop pre (previous act))))
 
 
+(define redo-ins
+  (lambda (txt act i)
+    (define pre (previous txt))
+    (define t (cons (cons (cons i (col)) pre) txt))
+    (conbine! pre t)
+    (case i
+      (#\newline
+        (row+)
+        (lines+)
+        (set-col! 1)
+        (clean-line)))
+    (move-to (row) (col))
+    (if (null? txt)   
+      (display i)
+      (begin 
+        (retrace! txt t)
+        (display i)
+        (col+)
+        (update-input txt)))
+    (input-loop t act)))
+
+
+
+(define redo-del
+  (lambda (txt act i)
+    (define pre (previous txt))
+    (define rest (next txt))
+        (case i
+          (#\newline
+            (conbine! pre rest)
+            (move-to (row) (col))
+            (lines-)
+            (if (null? rest)
+                (begin 
+                  (row-)
+                  (set-col! (+ (position pre) 1)))
+                (begin
+                  (retrace! rest pre)
+                  (clean-line)
+                  (row-)
+                  (set-col! (+ (position pre) 1))
+                  (update-delete rest))))
+          (else
+            (conbine! pre rest)
+            (move-to (row) (+ (col) 1))
+            (display #\backspace)
+            (display #\space)
+            (display #\backspace)
+            (if (not (null? rest))
+                (begin
+                  (retrace! rest pre)
+                  (update-delete rest)))))
+        (input-loop pre act)))
+
+
 
 (define undo
   (lambda (txt act)
@@ -402,23 +457,61 @@ To quit:  C-x C-c")))
             (begin
               (row+)
               (line+)))))
-    (let loop ((txt txt))
+    (let loop ((t txt))
       (cond 
         ((< l (line))
-           (up txt)
-           (loop (previous txt)))
+           (up t)
+           (loop (previous t)))
         ((> l (line))
-           (down txt)
-           (loop (next txt)))
-        ((< c (position txt))
-           (loop (previous txt)))
-        ((> c (position txt))
-           (loop (next txt)))
+           (down t)
+           (loop (next t)))
+        ((< c (position t))
+           (loop (previous t)))
+        ((> c (position t))
+           (loop (next t)))
         (else
           (set-col! c)
           (if (act-info act)
-              (del txt act (char-info act))
-              (ins txt act (char-info act))))))))
+              (undo-del t act (char-info act))
+              (undo-ins t act (char-info act))))))))
+
+
+(define redo
+  (lambda (txt act)
+    (define l (line-info act))
+    (define c (col-info act))
+    (define up
+      (lambda (k)
+        (if (or (equal? (payload k) #\newline) 
+                (= (position k) 80))
+            (begin 
+              (row-)
+              (line-)))))
+    (define down
+      (lambda (k)
+        (if (or (equal? (payload k) #\newline) 
+                (= (position k) 80))
+            (begin
+              (row+)
+              (line+)))))
+    (let loop ((t txt))
+      (cond 
+        ((< l (line))
+           (up t)
+           (loop (previous t)))
+        ((> l (line))
+           (down t)
+           (loop (next t)))
+        ((< c (position t))
+           (loop (previous t)))
+        ((> c (position t))
+           (loop (next t)))
+        (else
+          (set-col! c)
+          (if (act-info act)
+              (redo-ins t (next act) (char-info act))
+              (redo-del t (next act) (char-info act))))))))
+
 
 
 (define move-up
@@ -656,6 +749,8 @@ To quit:  C-x C-c")))
             (start)
             (message "C-x C-f")
             (input-loop *text* *acts*))
+          (#\r
+            (redo txt act))
           (#\u
             (undo txt act))
           (else
