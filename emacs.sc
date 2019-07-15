@@ -18,6 +18,7 @@
 
 
 (define *text* (cons (cons (cons #\x00 0) '()) '()))
+(define *acts* (cons (cons (cons (cons '() '()) (cons '() '())) '()) '()))
 
 (define row-size
   (lambda ()
@@ -218,6 +219,7 @@
     (clean-screem)
     (init-mouse)
     (set! *text* (cons (cons (cons #\x00 0) '()) '()))
+    (set! *acts* (cons (cons (cons (cons '() '()) (cons '() '())) '()) '()))
     (set-row-size! (get-row-size))
     (set-col-size! (get-col-size))
     (set-row! 1)
@@ -270,7 +272,7 @@ License: MIT
 This implementation of Emacs is written by pure Scheme, and also use Scheme instead of elisp as extended language.
 
 
-To start: C-x C-n
+To start: C-x C-f
 To quit:  C-x C-c")))
 
 
@@ -296,6 +298,106 @@ To quit:  C-x C-c")))
     (set-cdr! (car rest) pre)))
 
 
+(define action
+  (lambda (act a c)
+    (define i (cons (cons (cons (cons (line) (col)) (cons a c)) act) '()))
+      (set-cdr! act i)))
+
+
+(define loc-info caaar)
+(define acts-info cdaar)
+
+
+(define line-info
+  (lambda (act)
+    (car (loc-info act))))
+
+
+(define col-info
+  (lambda (act)
+    (cdr (loc-info act))))
+
+
+(define act-info
+  (lambda (act)
+    (car (acts-info act))))
+
+
+(define char-info
+  (lambda (act)
+    (cdr (acts-info act))))
+
+
+
+(define del
+  (lambda (txt act ch)
+    (define pre (previous txt))
+    (define rest (next txt))
+        (case ch
+          (#\newline
+            (conbine! pre rest)
+            (move-to (row) (col))
+            (lines-)
+            (if (null? rest)
+                (begin 
+                  (row-)
+                  (set-col! (+ (position pre) 1)))
+                (begin
+                  (retrace! rest pre)
+                  (clean-line)
+                  (row-)
+                  (set-col! (+ (position pre) 1))
+                  (update-delete rest))))
+          (else
+            (conbine! pre rest)
+            (move-to (row) (+ (col) 1))
+            (display #\backspace)
+            (display #\space)
+            (display #\backspace)
+            (if (not (null? rest))
+                (begin
+                  (retrace! rest pre)
+                  (update-delete rest)))))
+        (input-loop pre (previous act))))
+
+
+
+(define undo
+  (lambda (txt act)
+    (define l (line-info act))
+    (define c (col-info act))
+    (define up
+      (lambda (t)
+        (if (or (equal? (payload t) #\newline) 
+                (= (position t) 80))
+            (begin 
+              (row-)
+              (line-)))))
+    (define down
+      (lambda (t)
+        (if (or (equal? (payload t) #\newline) 
+                (= (position t) 80))
+            (begin
+              (row+)
+              (line+)))))
+    (let loop ((t txt))
+      (cond 
+        ((< l (line))
+           (up t)
+           (loop (previous t)))
+        ((> l (line))
+           (down t)
+           (loop (next t)))
+        ((< c (position t))
+           (loop (previous t)))
+        ((> c (position t))
+           (loop (next t)))
+        (else
+          (set-col! c)
+          (if (act-info act)
+              (del t act (char-info act))
+             ; (insert t act (char-info act))
+             ))))))
 
 
 (define move-up
@@ -376,16 +478,17 @@ To quit:  C-x C-c")))
 
 
 (define alarm
-  (lambda (txt)
+  (lambda (txt act)
     (display #\alarm)
     (message "Operating fail~") 
-    (input-loop txt)))
+    (input-loop txt act)))
 
 
 (define input
-  (lambda (txt i)
+  (lambda (txt act i)
     (define rest (next txt))
     (define t (cons (cons (cons i (col)) txt) rest))
+    (action act i (col))
     (conbine! txt t)
     (case i
       (#\newline
@@ -402,16 +505,18 @@ To quit:  C-x C-c")))
           (display i)
           (update-input rest)))
     (message) 
-    (input-loop (next txt))))
+    (input-loop t (next act))))
 
 
 (define delete
-  (lambda (txt)
+  (lambda (txt act)
     (define pre (previous txt))
     (define rest (next txt))
+    (define p (payload txt))
+    (action act p (col))
     (if (null? pre)
-        (alarm txt)
-        (case (payload txt)
+        (alarm txt act)
+        (case p
           (#\newline
             (conbine! pre rest)
             (lines-)
@@ -430,7 +535,7 @@ To quit:  C-x C-c")))
                   (set-col! (+ (position pre) 1))
                   (update-delete rest)))
             (message) 
-            (input-loop pre))
+            (input-loop pre (next act)))
           (else
             (conbine! pre rest)
             (display #\backspace)
@@ -443,7 +548,7 @@ To quit:  C-x C-c")))
                   (retrace! rest pre)
                   (update-delete rest)))
             (message) 
-            (input-loop pre))))))
+            (input-loop pre (next act)))))))
 
 
 (define switch-row-up
@@ -462,14 +567,14 @@ To quit:  C-x C-c")))
           t))))
 
 (define up
-  (lambda (txt)
+  (lambda (txt act)
     (move-up)
-    (input-loop (switch-row-up txt))))
+    (input-loop (switch-row-up txt) act)))
 
 (define down
-  (lambda (txt)
+  (lambda (txt act)
     (move-down)
-    (input-loop (switch-row-up txt))))
+    (input-loop (switch-row-up txt) act)))
 
 (define right
   (lambda (txt)
@@ -479,10 +584,10 @@ To quit:  C-x C-c")))
           (begin
             (move-right)
             (col+)
-            (input-loop rest))))))
+            (input-loop rest act))))))
 
 (define left
-  (lambda (txt)
+  (lambda (txt act)
     (define pre (previous txt))
     (if (null? pre)
         (alarm txt)
@@ -494,12 +599,12 @@ To quit:  C-x C-c")))
             (set-col! (position txt))
             (line-)
             (message "") 
-            (input-loop pre))
+            (input-loop pre act))
           (else
             (move-left)
             (col-)
             (message) 
-            (input-loop pre))))))
+            (input-loop pre act))))))
 
 
 (load "init.sc")
@@ -507,27 +612,31 @@ To quit:  C-x C-c")))
 
 
 (define  input-loop
-  (lambda (txt)
+  (lambda (txt act)
     (define i (read-char))
     (case i 
       (#\x01
         (message "C-a") 
-        (c-a txt))
+        (c-a txt act))
       (#\x02
         (message "C-b") 
-        (c-b txt))
+        (c-b txt act))
+      (#\x15
+        (undo txt act))
       (#\x18
         (message "C-x")  
         (case (read-char)
           (#\x03
             (quit))
-          (#\xE
+          (#\x06
             (start)
-            (message "C-x C-n")
-            (input-loop *text*))
+            (message "C-x C-f")
+            (input-loop *text* *acts*))
+          (#\u
+            (undo txt act))
           (else
             (message "C-x : command not found")
-            (input-loop txt))))
+            (input-loop txt act))))
       (#\tab
         (input-loop txt))
       (#\esc
@@ -535,26 +644,26 @@ To quit:  C-x C-c")))
           (#\[
             (case (read-char)
               (#\A
-                (up txt))
+                (up txt act))
               (#\B
-                (down txt))
+                (down txt act))
               (#\C
-                (right txt))
+                (right txt act))
               (#\D
-                (left txt))))
+                (left txt act))))
         (#\esc
-          (esc-esc txt))))
+          (esc-esc txt act))))
       (#\delete
-        (delete txt))
+        (delete txt act))
       (else 
-        (input txt i)))))
+        (input txt act i)))))
 
 (let ()
   (raw-on)
   (start)
   (welcome)
   (message)        
-  (input-loop *text*))
+  (input-loop *text* *acts*))
 
 
 

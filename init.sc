@@ -21,21 +21,21 @@
 
 
 (define c-a
-  (lambda (txt)
+  (lambda (txt act)
     (newline)
     (write-out *text*)
-    (input-loop txt)))
+    (input-loop txt act)))
 
 
 (define c-b
-  (lambda (txt)
+  (lambda (txt act)
     (newline)
     (display-with-char *text*)
-    (input-loop txt)))
+    (input-loop txt act)))
 
 
 (define esc-esc
-  (lambda (txt)
+  (lambda (txt act)
     (newline)
     (display-with-loc *text*)
-    (input-loop txt)))
+    (input-loop txt act)))
