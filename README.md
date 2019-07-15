@@ -1,5 +1,5 @@
 # Emacs
-Emacs implementation on Chez Scheme
+Emacs implementation by Scheme
 
 ![img](https://github.com/guenchi/Emacs/blob/master/img/0.png)
 

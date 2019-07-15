@@ -165,7 +165,7 @@
   (lambda ()
     (move-to (footer) 1)
     (set-tbgcolor 'white)
-    (display " *Emacs on Chez Scheme* [ ")
+    (display " *SchEmacs* [ ")
     (display (row))
     (display ", ")
     (display (col))
@@ -261,19 +261,26 @@
 (define welcome
   (lambda ()
     (printf 
-"Welcome to Emacs on Chez Scheme
+"Welcome to SchEmacs.
 
 
 
-Author:  github.com/guenchi
-License: MIT
+    ███████╗ ██████╗██╗  ██╗███████╗███╗   ███╗ █████╗  ██████╗███████╗
+    ██╔════╝██╔════╝██║  ██║██╔════╝████╗ ████║██╔══██╗██╔════╝██╔════╝
+    ███████╗██║     ███████║█████╗  ██╔████╔██║███████║██║     ███████╗
+    ╚════██║██║     ██╔══██║██╔══╝  ██║╚██╔╝██║██╔══██║██║     ╚════██║
+    ███████║╚██████╗██║  ██║███████╗██║ ╚═╝ ██║██║  ██║╚██████╗███████║
+    ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝╚══════╝
+                                                               
 
 
-This implementation of Emacs is written by pure Scheme, and also use Scheme instead of elisp as extended language.
+                                                 Author  guenchi@Github
+                                                    MIT  License
 
 
-To start: C-x C-f
-To quit:  C-x C-c")))
+
+  To start: C-x C-f
+  To quit:  C-x C-c")))
 
 
 
@@ -346,7 +353,7 @@ To quit:  C-x C-c")))
         (retrace! txt t)
         (display i)
         (col+)
-        (update-input txt)))
+        (update-insert txt)))
     (input-loop t (previous act))))
 
 
@@ -401,7 +408,7 @@ To quit:  C-x C-c")))
         (retrace! txt t)
         (display i)
         (col+)
-        (update-input txt)))
+        (update-insert txt)))
     (input-loop t act)))
 
 
@@ -435,7 +442,7 @@ To quit:  C-x C-c")))
                 (begin
                   (retrace! rest pre)
                   (update-delete rest)))))
-        (input-loop pre act)))
+    (input-loop pre act)))
 
 
 
