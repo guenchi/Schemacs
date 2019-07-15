@@ -23,7 +23,7 @@
 (define c-a
   (lambda (txt act)
     (newline)
-    (write-out *text*)
+    (write-out *acts*)
     (input-loop txt act)))
 
 

@@ -328,12 +328,34 @@ To quit:  C-x C-c")))
     (cdr (acts-info act))))
 
 
+(define ins
+  (lambda (txt act i)
+    (define pre (previous txt))
+    (define t (cons (cons (cons i (col)) pre) txt))
+    (conbine! pre t)
+    (case i
+      (#\newline
+        (row+)
+        (lines+)
+        (set-col! 1)
+        (clean-line)))
+    (move-to (row) (col))
+    (if (null? txt)   
+      (display i)
+      (begin 
+        (retrace! txt t)
+        (display i)
+        (col+)
+        (update-input txt)))
+    (input-loop t (previous act))))
+
+
 
 (define del
-  (lambda (txt act ch)
+  (lambda (txt act i)
     (define pre (previous txt))
     (define rest (next txt))
-        (case ch
+        (case i
           (#\newline
             (conbine! pre rest)
             (move-to (row) (col))
@@ -367,37 +389,36 @@ To quit:  C-x C-c")))
     (define l (line-info act))
     (define c (col-info act))
     (define up
-      (lambda (t)
-        (if (or (equal? (payload t) #\newline) 
-                (= (position t) 80))
+      (lambda (k)
+        (if (or (equal? (payload k) #\newline) 
+                (= (position k) 80))
             (begin 
               (row-)
               (line-)))))
     (define down
-      (lambda (t)
-        (if (or (equal? (payload t) #\newline) 
-                (= (position t) 80))
+      (lambda (k)
+        (if (or (equal? (payload k) #\newline) 
+                (= (position k) 80))
             (begin
               (row+)
               (line+)))))
-    (let loop ((t txt))
+    (let loop ((txt txt))
       (cond 
         ((< l (line))
-           (up t)
-           (loop (previous t)))
+           (up txt)
+           (loop (previous txt)))
         ((> l (line))
-           (down t)
-           (loop (next t)))
-        ((< c (position t))
-           (loop (previous t)))
-        ((> c (position t))
-           (loop (next t)))
+           (down txt)
+           (loop (next txt)))
+        ((< c (position txt))
+           (loop (previous txt)))
+        ((> c (position txt))
+           (loop (next txt)))
         (else
           (set-col! c)
           (if (act-info act)
-              (del t act (char-info act))
-             ; (insert t act (char-info act))
-             ))))))
+              (del txt act (char-info act))
+              (ins txt act (char-info act))))))))
 
 
 (define move-up
@@ -431,7 +452,7 @@ To quit:  C-x C-c")))
   (lambda (x)
     (if (not (null? x))
         (begin
-          (display (payload x))
+          (display (caaar x))
           (write-out (next x))))))
 
 
@@ -488,7 +509,7 @@ To quit:  C-x C-c")))
   (lambda (txt act i)
     (define rest (next txt))
     (define t (cons (cons (cons i (col)) txt) rest))
-    (action act i (col))
+    (action act #t i)
     (conbine! txt t)
     (case i
       (#\newline
@@ -513,7 +534,6 @@ To quit:  C-x C-c")))
     (define pre (previous txt))
     (define rest (next txt))
     (define p (payload txt))
-    (action act p (col))
     (if (null? pre)
         (alarm txt act)
         (case p
@@ -521,7 +541,8 @@ To quit:  C-x C-c")))
             (conbine! pre rest)
             (lines-)
             (if (null? rest)
-                (begin 
+                (begin
+                  (set-cdr! pre '())
                   (move-up)
                   (move-right (position pre))
                   (row-)
@@ -534,7 +555,8 @@ To quit:  C-x C-c")))
                   (row-)
                   (set-col! (+ (position pre) 1))
                   (update-delete rest)))
-            (message) 
+            (message)
+            (action act #f p)
             (input-loop pre (next act)))
           (else
             (conbine! pre rest)
@@ -543,11 +565,13 @@ To quit:  C-x C-c")))
             (if (> (col) 1)
                     (display #\backspace))
             (col-)
-            (if (not (null? rest))
+            (if (null? rest)
+                (set-cdr! pre '())
                 (begin
                   (retrace! rest pre)
                   (update-delete rest)))
             (message) 
+            (action act #f p)
             (input-loop pre (next act)))))))
 
 
