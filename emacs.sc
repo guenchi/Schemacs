@@ -736,18 +736,14 @@
         (alarm txt act)
         (case (payload txt)
           (#\newline 
-            (move-up)
-            (move-right (- (position txt) 2))
             (row-)
             (set-col! (position txt))
-            (line-)
-            (message) 
-            (input-loop pre act))
+            (line-))
           (else
-            (move-left)
-            (col-)
-            (message) 
-            (input-loop pre act))))))
+            (col-))))
+    (message) 
+    (move-to (row) (col))
+    (input-loop pre act)))
 
 
 (load "init.sc")
