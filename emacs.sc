@@ -656,17 +656,15 @@
             (if (null? rest)
                 (begin
                   (set-cdr! pre '())
-                  (move-up)
-                  (move-right (position pre))
                   (row-)
-                  (set-col! (+ (position pre) 1)))
+                  (set-col! (+ (position pre) 1))
+                  (move-to (row) (col)))
                 (begin
                   (retrace! rest pre)
                   (clean-line)
-                  (move-up)
-                  (move-right (position pre))
                   (row-)
                   (set-col! (+ (position pre) 1))
+                  (move-to (row) (col))
                   (update-delete rest)))
             (message)
             (action act #f p)
@@ -718,15 +716,16 @@
     (define rest (next txt))
     (if (null? rest)
         (alarm txt act)
-        (case (payload rest)
-          (#\newline
-            (row+)
-            (set-col! 1))
-          (else
-            (col+))))
-    (message) 
-    (move-to (row) (col))
-    (input-loop rest act)))
+        (begin 
+          (case (payload rest)
+            (#\newline
+              (row+)
+              (set-col! 1))
+            (else
+              (col+)))
+          (message) 
+          (move-to (row) (col))
+          (input-loop rest act)))))
 
 
 (define left
@@ -734,16 +733,17 @@
     (define pre (previous txt))
     (if (null? pre)
         (alarm txt act)
-        (case (payload txt)
-          (#\newline 
-            (row-)
-            (set-col! (position txt))
-            (line-))
-          (else
-            (col-))))
-    (message) 
-    (move-to (row) (col))
-    (input-loop pre act)))
+        (begin
+          (case (payload txt)
+            (#\newline 
+              (row-)
+              (set-col! (position txt))
+              (line-))
+            (else
+              (col-)))
+          (message) 
+          (move-to (row) (col))
+          (input-loop pre act)))))
 
 
 (load "init.sc")
