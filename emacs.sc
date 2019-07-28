@@ -541,7 +541,7 @@
 (define insert
   (lambda (txt act r c l t i)
     (define rest (next txt))
-    (define t (cons (cons (cons i (col)) txt) rest))
+    (define t (cons (cons (cons i (col)) txt) rest))    ;; << rename t
     (action act #t i)
     (conbine! txt t)
     (case i
