@@ -20,79 +20,18 @@
 (define *text* (cons (cons (cons #\x00 0) '()) '()))
 (define *acts* (cons (cons (cons (cons '() '()) (cons '() '())) '()) '()))
 
-(define row-size
+(define row-size)
+(define col-size)
+
+
+(define update-row-size 
   (lambda ()
-    (virtual-register 0)))
+    (set! row-size (get-row-size)))) 
 
-(define set-row-size! 
-  (lambda (x)
-    (set-virtual-register! 0 x))) 
 
-(define col-size
+(define update-col-size 
   (lambda ()
-    (virtual-register 1)))
-
-
-(define set-col-size! 
-  (lambda (x)
-    (set-virtual-register! 1 x)))
-
-(define row 
-    (lambda ()
-        (virtual-register 2)))
-
-(define set-row! 
-  (lambda (x)
-    (set-virtual-register! 2 x))) 
-
-
-(define col 
-    (lambda ()
-        (virtual-register 3)))
-
-
-(define set-col! 
-  (lambda (x)
-    (set-virtual-register! 3 x))) 
-
-
-(define col-cache
-    (lambda ()
-        (virtual-register 4)))
-
-
-(define set-col-cache!
-    (lambda ()
-        (set-virtual-register! 4 (col))))
-
-
-(define lines
-  (lambda ()
-    (virtual-register 5)))
-
-
-(define set-lines!
-  (lambda (x)
-    (set-virtual-register! 5 x))) 
-
-
-(define line
-  (lambda ()
-    (virtual-register 6)))
-
-
-(define set-line!
-  (lambda (x)
-    (set-virtual-register! 6 x))) 
-
-
-(define footer
-  (lambda ()
-    (virtual-register 7)))
-
-(define set-footer!
-  (lambda (x)
-    (set-virtual-register! 7 x)))
+    (set! col-size (get-col-size)))) 
 
 
 
@@ -338,7 +277,7 @@
 
 
 (define undo-insert
-  (lambda (txt act i)
+  (lambda (txt act r c l t i)
     (define rest (next txt))
     (define t (cons (cons (cons i (col)) txt) rest))
     (conbine! txt t)
@@ -360,7 +299,7 @@
 
 
 (define undo-delete
-  (lambda (txt act i)
+  (lambda (txt act r c l t i)
     (define pre (previous txt))
     (define rest (next txt))
         (case i
@@ -392,7 +331,7 @@
 
 
 (define undo
-  (lambda (txt act)
+  (lambda (txt act r c l t)
     (define l (line-info act))
     (define c (col-info act))
     (define up
@@ -439,7 +378,7 @@
 
 
 (define redo-insert
-  (lambda (txt act i)
+  (lambda (txt act r c l t i)
     (define pre (previous txt))
     (define t (cons (cons (cons i (col)) pre) txt))
     (conbine! pre t)
@@ -462,7 +401,7 @@
 
 
 (define redo-delete
-  (lambda (txt act i)
+  (lambda (txt act r c l t i)
     (define pre (previous txt))
     (define rest (next txt))
         (case i
@@ -496,7 +435,7 @@
 
 
 (define redo
-  (lambda (txt act)
+  (lambda (txt act r c l t)
     (define n (next act))
     (define l (line-info n))
     (define c (col-info n))
@@ -612,14 +551,14 @@
 
 
 (define alarm
-  (lambda (txt act)
+  (lambda (txt act r c l t)
     (display #\alarm)
     (message "Operating fail~") 
-    (input-loop txt act)))
+    (input-loop txt act r c l t)))
 
 
 (define insert
-  (lambda (txt act i)
+  (lambda (txt act r c l t i)
     (define rest (next txt))
     (define t (cons (cons (cons i (col)) txt) rest))
     (action act #t i)
@@ -643,12 +582,12 @@
 
 
 (define delete
-  (lambda (txt act)
+  (lambda (txt act r c l t)
     (define pre (previous txt))
     (define rest (next txt))
     (define p (payload txt))
     (if (null? pre)
-        (alarm txt act)
+        (alarm txt act r c l t)
         (case p
           (#\newline
             (conbine! pre rest)
@@ -702,20 +641,20 @@
           t))))
 
 (define up
-  (lambda (txt act)
+  (lambda (txt act r c l t)
     (move-up)
     (input-loop (switch-row-up txt) act)))
 
 (define down
-  (lambda (txt act)
+  (lambda (txt act r c l t)
     (move-down)
     (input-loop (switch-row-up txt) act)))
 
 (define right
-  (lambda (txt act)
+  (lambda (txt act r c l t)
     (define rest (next txt))
     (if (null? rest)
-        (alarm txt act)
+        (alarm txt act r c l t)
         (begin 
           (case (payload rest)
             (#\newline
@@ -729,10 +668,10 @@
 
 
 (define left
-  (lambda (txt act)
+  (lambda (txt act r c l t)
     (define pre (previous txt))
     (if (null? pre)
-        (alarm txt act)
+        (alarm txt act r c l t)
         (begin
           (case (payload txt)
             (#\newline 
@@ -751,23 +690,23 @@
 
 
 (define  input-loop
-  (lambda (txt act)
+  (lambda (txt act r c l t r c l t)
     (define i (read-char))
     (case i 
       (#\x01
         (message "C-a") 
-        (c-a txt act))
+        (c-a txt act r c l t))
       (#\x02
         (message "C-b Backward") 
-        (left txt act))
+        (left txt act r c l t))
       (#\x06
         (message "C-f Forward")
-        (right txt act))
+        (right txt act r c l t))
       (#\x10
         (message "C-p Previous line")
-        (up txt act))
+        (up txt act r c l t))
       (#\x15
-        (undo txt act))
+        (undo txt act r c l t))
       (#\x18
         (message "C-x")  
         (case (read-char)
@@ -778,15 +717,15 @@
             (message "C-x C-f")
             (input-loop *text* *acts*))
           (#\r
-            (redo txt act))
+            (redo txt act r c l t))
           (#\u
-            (undo txt act))
+            (undo txt act r c l t))
           (else
             (message "C-x : command not found")
-            (input-loop txt act))))
+            (input-loop txt act r c l t))))
       (#\xE
         (message "C-n Next line")
-        (down txt act))
+        (down txt act r c l t))
       (#\tab
         (input-loop txt))
       (#\esc
@@ -794,26 +733,26 @@
           (#\[
             (case (read-char)
               (#\A
-                (up txt act))
+                (up txt act r c l t))
               (#\B
-                (down txt act))
+                (down txt act r c l t))
               (#\C
-                (right txt act))
+                (right txt act r c l t))
               (#\D
-                (left txt act))))
+                (left txt act r c l t))))
         (#\esc
-          (esc-esc txt act))))
+          (esc-esc txt act r c l t))))
       (#\delete
-        (delete txt act))
+        (delete txt act r c l t))
       (else 
-        (insert txt act i)))))
+        (insert txt act r c l t i)))))
 
 (let ()
   (raw-on)
   (start)
   (welcome)
   (message)        
-  (input-loop *text* *acts*))
+  (input-loop *text* *acts* 1 1 1 1))
 
 
 
