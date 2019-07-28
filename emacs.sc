@@ -20,8 +20,8 @@
 (define *text* (cons (cons (cons #\x00 0) '()) '()))
 (define *acts* (cons (cons (cons (cons '() '()) (cons '() '())) '()) '()))
 
-(define row-size)
-(define col-size)
+(define row-size (get-row-size))
+(define col-size (get-col-size))
 
 
 (define update-row-size 
@@ -36,36 +36,17 @@
 
 
 (define row-
-  (lambda ()
-    (if (> (row) 1)
-        (set-row! (- (row) 1)))))
+  (lambda (r)
+    (if (> r 1)
+        (- r 1)
+        r)))
 
 (define row+
-  (lambda ()
-    (if (< (row) (row-size))
-        (set-row! (+ (row) 1)))))
+  (lambda (r)
+    (if (< r row-size)
+        (+ r 1)
+        r)))
 
-
-(define line-
-  (lambda ()
-    (set-line! (- (line) 1))))
-
-
-(define line+
-  (lambda ()
-    (set-line! (+ (line) 1))))
-
-
-(define lines-
-  (lambda ()
-    (set-line! (- (line) 1))
-    (set-lines! (- (lines) 1))))
-
-
-(define lines+
-  (lambda ()
-    (set-line! (+ (line) 1))
-    (set-lines! (+ (lines) 1))))
 
 
 (define col+
@@ -690,7 +671,7 @@
 
 
 (define  input-loop
-  (lambda (txt act r c l t r c l t)
+  (lambda (txt act r c l t)
     (define i (read-char))
     (case i 
       (#\x01
