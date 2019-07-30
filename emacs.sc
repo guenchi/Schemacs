@@ -276,10 +276,8 @@
                                                                
 
 
-                                                 Author  guenchi@Github
+                                                 Author  Github/guenchi
                                                     MIT  License
-
-
 
   To start: C-x C-f
   To quit:  C-x C-c")))
@@ -638,7 +636,8 @@
           (retrace! rest t)
           (display i)
           (update-insert rest)))
-    (message) 
+    (message)
+    (set-col-cache!) 
     (input-loop t (next act))))
 
 
@@ -668,6 +667,7 @@
                   (update-delete rest)))
             (message)
             (action act #f p)
+            (set-col-cache!)
             (input-loop pre (next act)))
           (else
             (conbine! pre rest)
@@ -683,15 +683,8 @@
                   (update-delete rest)))
             (message) 
             (action act #f p)
+            (set-col-cache!)
             (input-loop pre (next act)))))))
-
-
-(define switch-row-up
-  (lambda (txt)
-    (let loop ((c (col-size))(t txt))
-      (if (> c 0)
-          (loop (- c 1)(previous t))
-          t))))
 
 
 (define switch-row-down
@@ -701,15 +694,34 @@
           (loop (- c 1)(next t))
           t))))
 
+
 (define up
   (lambda (txt act)
-    (move-up)
-    (input-loop (switch-row-up txt) act)))
+    (define pre (previous txt))
+    (if (null? pre)
+        (alarm txt act)
+        (begin
+          (col-)
+          (if (= (col) (col-cache))
+              (begin
+                (move-to (row) (col))
+                (input-loop pre act))
+              (case (payload txt)
+                (#\newline
+                  (set-col! (position txt))
+                  (if (> (col) (col-cache))
+                      (up pre act)
+                      (begin
+                        (move-to (row) (col))
+                        (input-loop pre act))))
+                (else (up pre act))))))))
+
 
 (define down
   (lambda (txt act)
     (move-down)
     (input-loop (switch-row-up txt) act)))
+
 
 (define right
   (lambda (txt act)
@@ -724,6 +736,7 @@
             (else
               (col+)))
           (message) 
+          (set-col-cache!)
           (move-to (row) (col))
           (input-loop rest act)))))
 
@@ -741,7 +754,8 @@
               (line-))
             (else
               (col-)))
-          (message) 
+          (message)
+          (set-col-cache!)
           (move-to (row) (col))
           (input-loop pre act)))))
 
