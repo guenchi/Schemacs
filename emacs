@@ -1,5 +1,4 @@
-
-
+#!/usr/local/bin/scheme
 
 
 (load-shared-object "emacs.so")
