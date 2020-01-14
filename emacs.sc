@@ -19,6 +19,7 @@
 
 (define *text* (cons (cons (cons #\x00 0) '()) '()))
 (define *acts* (cons (cons (cons (cons '() '()) (cons '() '())) '()) '()))
+(define *file*)
 
 (define row-size
   (lambda ()
@@ -214,7 +215,7 @@
     (init-mouse)
     (exit)))
 
-(define start
+(define init
   (lambda ()
     (clean-screem)
     (init-mouse)
@@ -760,8 +761,10 @@
           (input-loop pre act)))))
 
 
-(load "init.sc")
 
+
+
+(load "init.sc")
 
 
 (define  input-loop
@@ -788,7 +791,7 @@
           (#\x03
             (quit))
           (#\x06
-            (start)
+            (init)
             (message "C-x C-f")
             (input-loop *text* *acts*))
           (#\r
@@ -822,12 +825,33 @@
       (else 
         (insert txt act i)))))
 
+
+(define start
+  (lambda ()
+    (case (read-char)
+      (#\x18
+        (message "C-x")
+        (case (read-char)
+          (#\x03
+            (quit))
+          (#\x06
+            (init)
+            (message "C-x C-f")
+            (input-loop *text* *acts*))
+          (else
+            (message "Operating fail~ pres C-x C-h for tutoral")
+            (start))))
+      (else
+        (message "Operating fail~ pres C-x C-h for tutoral")
+        (start)))))
+
+
 (let ()
   (raw-on)
-  (start)
+  (init)
   (welcome)
   (message)        
-  (input-loop *text* *acts*))
+  (start))
 
 
 
