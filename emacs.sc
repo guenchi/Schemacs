@@ -276,8 +276,8 @@
                                                                
 
 
-                                                 Author  Github/guenchi
-                                                    MIT  License
+                                                      Author  guenchi
+                                                         MIT  License
 
   To start: C-x C-f
   To quit:  C-x C-c")))
