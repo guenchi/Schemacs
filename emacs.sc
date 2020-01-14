@@ -261,7 +261,7 @@
 (define welcome
   (lambda ()
     (printf 
-"Welcome to SchEmacs.
+"Welcome to Schemacs.
 
     ╔══════╗ ╔═════╗╔═╗  ╔═╗╔══════╗╔══╗   ╔══╗╔══════╗
     ║ ╔════╝╔ ╔════╝║ ║  ║ ║║ ╔════╝║  ╚╗ ╔╝  ║║ ╔════╝
