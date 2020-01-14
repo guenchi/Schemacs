@@ -720,7 +720,7 @@
 (define down
   (lambda (txt act)
     (move-down)
-    (input-loop (switch-row-up txt) act)))
+    (input-loop txt act)))
 
 
 (define right
