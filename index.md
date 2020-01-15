@@ -1,2 +1,1 @@
-# Schemacs
-
+![img](https://github.com/guenchi/Schemacs/blob/gh-pages/img/schemacs.png)
