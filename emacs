@@ -296,14 +296,18 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
  C-<chr>  means hold the CONTROL key while typing the character <chr>.
  M-<chr>  means hold the META or EDIT or ALT key down while typing <chr>.
 
+       C-x C-c         quit
+       C-x C-f         find a file
+       C-x s           save the file
+
        C-x C-n         next line
        C-x C-b         backward
        C-x C-f         forward
        C-x C-p         previous line
 
-       C-x C-c         quit
-       C-x C-f         find a file
-       C-x s           save the file
+       C-x u           undo
+       C-x r           redo
+
 ")))
 
 
