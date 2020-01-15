@@ -763,8 +763,8 @@
 (define open-file
   (lambda ()
     (message)
-    (ioctl #\2 #\4 #\; #\0 #\H)
-    (display "open file: ")
+    (move-to 24 0)
+    (display "find file: ")
     (let ((path (list->string 
                   (let loop ((c (read-char)))
                     (case c
@@ -775,17 +775,17 @@
       (if (file-exists? path)
         (begin
           (message "file exist, recove? y/n")
-          (ioctl #\2 #\4 #\; #\2 #\4 #\H)
+          (move-to 24 24)
           (case (read-char)
             (#\y
-              (set! *file* path)
-              (message (string-append "open new file: " path)))
-            (else (open-file))))))
-    (ioctl #\0 #\; #\0 #\H)
+              (set! *file* path))
+            (else (open-file)))))
+      (message (string-append "open new file: " path)))
+    (move-to 0 0)
     (input-loop *text* *acts*)))
 
 
-(load "init.sc")
+(load "init.ss")
 
 
 (define  input-loop
@@ -814,7 +814,7 @@
           (#\x06
             (init)
             (message "C-x C-f")
-            (input-loop *text* *acts*))
+            (open-file))
           (#\r
             (redo txt act))
           (#\u
@@ -857,7 +857,6 @@
             (quit))
           (#\x06
             (init)
-            (message "C-x C-f")
             (open-file))
           (else
             (message "Operating fail~ pres C-x C-h for tutoral")
