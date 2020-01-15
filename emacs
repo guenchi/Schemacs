@@ -290,6 +290,13 @@
     (printf 
 "Schemacs tutoral.
 
+Emacs commands generally involve the CONTROL key (sometimes labeled
+CTRL or CTL) or the META key (sometimes labeled EDIT or ALT).  Rather than
+write that in full each time, we'll use the following abbreviations:
+
+ C-<chr>  means hold the CONTROL key while typing the character <chr>.
+ M-<chr>  means hold the META or EDIT or ALT key down while typing <chr>.
+
        C-x C-c         quit Schemacs
        C-x C-f         open file
        C-x C-n         next line
