@@ -165,7 +165,7 @@
   (lambda ()
     (move-to (footer) 1)
     (set-tbgcolor 'white)
-    (display " *SchEmacs* [ ")
+    (display " *Schemacs* [ ")
     (display (row))
     (display ", ")
     (display (col))
@@ -263,6 +263,9 @@
     (printf 
 "Welcome to Schemacs.
 
+
+
+
     ╔══════╗ ╔═════╗╔═╗  ╔═╗╔══════╗╔══╗   ╔══╗╔══════╗
     ║ ╔════╝╔ ╔════╝║ ║  ║ ║║ ╔════╝║  ╚╗ ╔╝  ║║ ╔════╝
     ║ ╚════╗║ ║     ║ ╚══╝ ║║ ╚══╗  ║ ╔╗╚ ╝╔╗ ║║ ╚══╗  
@@ -276,11 +279,9 @@
                                                                
 
 
-                                                      Author  guenchi
-                                                         MIT  License
 
-  To start: C-x C-f
-  To quit:  C-x C-c")))
+                                                             Author  guenchi
+                                                                MIT  License")))
 
 
 
@@ -881,7 +882,8 @@
   (raw-on)
   (init)
   (welcome)
-  (message)        
+  (message)
+  (move-to 24 0)        
   (start))
 
 
