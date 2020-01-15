@@ -284,6 +284,21 @@
                                                                 MIT  License")))
 
 
+                                                  
+(define help
+  (lambda ()
+    (printf 
+"Schemacs tutoral.
+
+       C-x C-c         quit Schemacs
+       C-x C-f         open file
+       C-x C-n         next line
+       C-x C-b         Backward
+       C-x C-f         Forward
+       C-x C-p         Previous line
+")))
+
+
 
 (define previous cdar)
 (define next cdr)
@@ -789,11 +804,11 @@
       (set! *file* path)
       (if (file-exists? path)
         (begin
-          (move-to 0 0)
+          (init-mouse)
           (read-file path)
           (message (format "open file: ~a" path)))
         (message (format "create new file: ~a" path))))
-    (move-to 0 0)
+    (init-mouse)
     (input-loop *text* *acts*)))
 
 
@@ -870,11 +885,18 @@
           (#\x06
             (init)
             (open-file))
+          (#\h
+            (clean-screem)
+            (init-mouse)
+            (help)
+            (message)
+            (init-mouse)
+            (start))
           (else
-            (message "Operating fail~ pres C-x C-h for tutoral")
+            (message "Operating fail~ pres C-x h for tutoral")
             (start))))
       (else
-        (message "Operating fail~ pres C-x C-h for tutoral")
+        (message "Operating fail~ pres C-x h for tutoral")
         (start)))))
 
 
