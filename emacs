@@ -760,6 +760,19 @@
           (input-loop pre act)))))
 
 
+(define read-file
+  (lambda (path)
+    (let ((p (open-input-file path)))
+      (let loop ((lst '()) (c (read-char p)))
+          (if (eof-object? c)
+              (begin 
+                (close-input-port p)
+                (list->string (reverse lst)))
+              (begin
+                (display c)      
+                (loop (cons c lst) (read-char p))))))))
+
+
 (define open-file
   (lambda ()
     (message)
@@ -772,15 +785,13 @@
                       (else
                         (display c)
                         (cons c (loop (read-char)))))))))
+      (set! *file* path)
       (if (file-exists? path)
         (begin
-          (message "file exist, recove? y/n")
-          (move-to 24 24)
-          (case (read-char)
-            (#\y
-              (set! *file* path))
-            (else (open-file)))))
-      (message (string-append "open new file: " path)))
+          (move-to 0 0)
+          (read-file path)
+          (message (format "open file: ~a" path)))
+        (message (format "create new file: ~a" path))))
     (move-to 0 0)
     (input-loop *text* *acts*)))
 
