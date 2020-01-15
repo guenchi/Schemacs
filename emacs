@@ -288,21 +288,22 @@
 (define help
   (lambda ()
     (printf 
-"Schemacs tutoral.
+"
+Schemacs tutoral.
 
-Emacs commands generally involve the CONTROL key (sometimes labeled
-CTRL or CTL) or the META key (sometimes labeled EDIT or ALT).  Rather than
-write that in full each time, we'll use the following abbreviations:
+Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL) or the META key (sometimes labeled EDIT or ALT). Rather than write that in full each time, we'll use the following abbreviations:
 
  C-<chr>  means hold the CONTROL key while typing the character <chr>.
  M-<chr>  means hold the META or EDIT or ALT key down while typing <chr>.
 
-       C-x C-c         quit Schemacs
-       C-x C-f         open file
        C-x C-n         next line
-       C-x C-b         Backward
-       C-x C-f         Forward
-       C-x C-p         Previous line
+       C-x C-b         backward
+       C-x C-f         forward
+       C-x C-p         previous line
+
+       C-x C-c         quit
+       C-x C-f         find a file
+       C-x s           save current file
 ")))
 
 
@@ -897,7 +898,7 @@ write that in full each time, we'll use the following abbreviations:
             (init-mouse)
             (help)
             (message)
-            (init-mouse)
+            (move-to 24 0) 
             (start))
           (else
             (message "Operating fail~ pres C-x h for tutoral")
