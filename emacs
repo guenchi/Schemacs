@@ -303,7 +303,7 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
 
        C-x C-c         quit
        C-x C-f         find a file
-       C-x s           save current file
+       C-x s           save the file
 ")))
 
 
