@@ -16,9 +16,14 @@
     (foreign-procedure "get_col" () int))
 
 
-(define *text* (cons (cons (cons #\x00 0) '()) '()))
-(define *acts* (cons (cons (cons (cons '() '()) (cons '() '())) '()) '()))
+(define INIT-TEXT (cons (cons (cons #\x00 0) '()) '()))
+(define INIT-ACTS (cons (cons (cons (cons '() '()) (cons '() '())) '()) '()))
+
+
+(define *text*)
+(define *acts*)
 (define *file*)
+
 
 (define row-size
   (lambda ()
@@ -28,14 +33,15 @@
   (lambda (x)
     (set-virtual-register! 0 x))) 
 
+
 (define col-size
   (lambda ()
     (virtual-register 1)))
 
-
 (define set-col-size! 
   (lambda (x)
     (set-virtual-register! 1 x)))
+
 
 (define row 
     (lambda ()
@@ -93,7 +99,6 @@
 (define set-footer!
   (lambda (x)
     (set-virtual-register! 7 x)))
-
 
 
 (define row-
@@ -218,8 +223,8 @@
   (lambda ()
     (clean-screem)
     (init-mouse)
-    (set! *text* (cons (cons (cons #\x00 0) '()) '()))
-    (set! *acts* (cons (cons (cons (cons '() '()) (cons '() '())) '()) '()))
+    (set! *text* INIT-TEXT)
+    (set! *acts* INIT-ACTS)
     (set-row-size! (get-row-size))
     (set-col-size! (get-col-size))
     (set-row! 1)
@@ -424,14 +429,14 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
     (define up
       (lambda (k)
         (if (or (equal? (payload k) #\newline) 
-                (= (position k) 80))
+                (= (position k) (col-size)))
             (begin 
               (row-)
               (line-)))))
     (define down
       (lambda (k)
         (if (or (equal? (payload k) #\newline) 
-                (= (position k) 80))
+                (= (position k) (col-size)))
             (begin
               (row+)
               (line+)))))
@@ -529,14 +534,14 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
     (define up
       (lambda (k)
         (if (or (equal? (payload k) #\newline) 
-                (= (position k) 80))
+                (= (position k) (col-size)))
             (begin 
               (row-)
               (line-)))))
     (define down
       (lambda (k)
         (if (or (equal? (payload k) #\newline) 
-                (= (position k) 80))
+                (= (position k) (col-size)))
             (begin
               (row+)
               (line+)))))
@@ -813,7 +818,7 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
 (define open-file
   (lambda ()
     (message)
-    (move-to 24 0)
+    (move-to (row-size) 0)
     (display "find file: ")
     (let ((path (list->string 
                   (let loop ((c (read-char)))
@@ -828,7 +833,9 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
           (init-mouse)
           (read-file path)
           (message (format "open file: ~a" path)))
-        (message (format "create new file: ~a" path))))
+        (begin
+          (init)
+          (message (format "create new file: ~a" path)))))
     (init-mouse)
     (input-loop *text* *acts*)))
 
@@ -911,7 +918,7 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
             (init-mouse)
             (help)
             (message)
-            (move-to 24 0) 
+            (move-to (row-size) 0) 
             (start))
           (else
             (message "Operating fail~ pres C-x h for tutoral")
@@ -926,7 +933,7 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
   (init)
   (welcome)
   (message)
-  (move-to 24 0)        
+  (move-to (row-size) 0)        
   (start))
 
 
