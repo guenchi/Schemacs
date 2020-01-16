@@ -715,13 +715,6 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
             (input-loop pre (next act)))))))
 
 
-(define switch-row-down
-  (lambda (txt)
-    (let loop ((c (col-size))(t txt))
-      (if (> c 0)
-          (loop (- c 1)(next t))
-          t))))
-
 
 (define up
   (lambda (txt act)
@@ -747,8 +740,24 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
 
 (define down
   (lambda (txt act)
-    (move-down)
-    (input-loop txt act)))
+    (define rest (next txt))
+    (if (null? rest)
+        (alarm txt act)
+        (begin
+          (col+)
+          (if (= (col) (col-cache))
+              (begin
+                (move-to (row) (col))
+                (input-loop rest act))
+              (case (payload txt)
+                (#\newline
+                  (set-col! (position txt))
+                  (if (> (col) (col-cache))
+                      (down rest act)
+                      (begin
+                        (move-to (row) (col))
+                        (input-loop rest act))))
+                (else (down rest act))))))))
 
 
 (define right
