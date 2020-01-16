@@ -16,10 +16,6 @@
     (foreign-procedure "get_col" () int))
 
 
-(define INIT-TEXT (cons (cons (cons #\x00 0) '()) '()))
-(define INIT-ACTS (cons (cons (cons (cons '() '()) (cons '() '())) '()) '()))
-
-
 (define *text*)
 (define *acts*)
 (define *file*)
@@ -223,8 +219,8 @@
   (lambda ()
     (clean-screem)
     (init-mouse)
-    (set! *text* INIT-TEXT)
-    (set! *acts* INIT-ACTS)
+    (set! *text* (cons (cons (cons #\x00 0) '()) '()))
+    (set! *acts* (cons (cons (cons (cons '() '()) (cons '() '())) '()) '()))
     (set-row-size! (get-row-size))
     (set-col-size! (get-col-size))
     (set-row! 1)
