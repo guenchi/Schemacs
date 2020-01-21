@@ -1,7 +1,7 @@
 #!/usr/local/bin/scheme
 
 
-(load-shared-object "schemacs.so")
+(load-shared-object "emacs.so")
 
 (define raw-on
   (foreign-procedure "raw_on" () int))
