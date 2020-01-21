@@ -4,5 +4,5 @@
 
 
 
-install: schemacs.c
-	cc -fPIC -shared schemacs.c  -o schemacs.so
+install: emacs.c
+	cc -fPIC -shared emacs.c -o emacs.so
