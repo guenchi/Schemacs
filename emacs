@@ -854,7 +854,11 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
       (#\x10
         (message "C-p Previous line")
         (up txt act))
+      (#\x12
+        (message "C-r Redo")
+        (redo txt act))
       (#\x15
+        (message "C-u Undo")
         (undo txt act))
       (#\x18
         (message "C-x")  
@@ -865,10 +869,6 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
             (init)
             (message "C-x C-f")
             (open-file))
-          (#\r
-            (redo txt act))
-          (#\u
-            (undo txt act))
           (else
             (message "C-x : command not found")
             (input-loop txt act))))
