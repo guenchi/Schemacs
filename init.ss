@@ -1,6 +1,6 @@
 
 ;; (set-txtcolor)
-;; (set-tbgcolor)
+;; (set-bgcolor)
 ;; 'black 'red 'green 'yellow 'blue 'purple 'dark-green 'white
 
 

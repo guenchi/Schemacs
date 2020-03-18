@@ -165,7 +165,7 @@
 (define auto-info
   (lambda ()
     (move-to (footer) 1)
-    (set-tbgcolor 'white)
+    (set-bgcolor 'white)
     (display " *Schemacs* [ ")
     (display (row))
     (display ", ")
@@ -175,7 +175,7 @@
     (display " / ")
     (display (lines))
     (clean-line)
-    (set-tbgcolor 'black)))
+    (set-bgcolor 'black)))
 
 
 (define message
@@ -244,7 +244,7 @@
         ('white 37)) #\m)))
 
 
-(define set-tbgcolor
+(define set-bgcolor
   (lambda (c)
     (ioctl
       (case c
@@ -256,7 +256,28 @@
         ('purple 45)
         ('dark-green 46)
         ('white 47)) #\m)))
+
   
+
+(define reset-color
+  (lambda ()
+    (ioctl 00 #\m)))
+
+
+
+(define-syntax display-with
+  (syntax-rules ()
+    ((_ t str)
+       (begin
+         (set-txtcolor t)
+         (display str)
+         (reset-color)))
+    ((_ t b str)
+        (begin
+          (set-txtcolor t)
+          (set-bgcolor b)
+          (display str)
+          (reset-color)))))
 
 
 (define welcome
