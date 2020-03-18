@@ -842,9 +842,6 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
   (lambda (txt act)
     (define i (read-char))
     (case i 
-      (#\x01
-        (message "C-a") 
-        (c-a txt act))
       (#\x02
         (message "C-b Backward") 
         (left txt act))
@@ -869,6 +866,8 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
             (init)
             (message "C-x C-f")
             (open-file))
+          (#\t
+            (load "test.ss"))
           (else
             (message "C-x : command not found")
             (input-loop txt act))))
@@ -888,9 +887,7 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
               (#\C
                 (right txt act))
               (#\D
-                (left txt act))))
-        (#\esc
-          (esc-esc txt act))))
+                (left txt act))))))
       (#\delete
         (delete txt act))
       (else 
@@ -915,6 +912,8 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
             (message)
             (move-to (row-size) 0) 
             (start))
+          (#\t
+            (load "test.ss"))
           (else
             (message "Operating fail~ pres C-x h for tutoral")
             (start))))
