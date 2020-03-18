@@ -301,14 +301,13 @@ Emacs commands generally involve the CONTROL key (sometimes labeled CTRL or CTL)
        C-x C-f         find a file
        C-x s           save the file
 
-       C-x C-n         next line
-       C-x C-b         backward
-       C-x C-f         forward
-       C-x C-p         previous line
-
        C-x u           undo
        C-x r           redo
-
+       
+       C-n         Move to next line
+       C-b         Move backward a character
+       C-f         Move forward a character
+       C-p         Move to previous line
 ")))
 
 
